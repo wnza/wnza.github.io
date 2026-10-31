@@ -1,0 +1,10 @@
+{
+  "name": "hanhan-douyin-clean",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "憨憨去水印 · 抖音视频 / 图集无水印提取单页工具",
+  "scripts": {
+    "start": "node serve.mjs"
+  }
+}

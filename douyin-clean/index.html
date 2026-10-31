@@ -1,0 +1,2484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="shortcut icon" href="https://r.8b.io/160029/assets/images/363957_128x128_1.png" type="image/x-icon">
+  <meta name="theme-color" content="#f6f7fb">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="抖音视频、图集无水印提取。粘贴分享链接，一键提取并保存原画质视频或原图。">
+  <title>憨憨去水印 · 抖音无水印提取</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --ink: #0b1222;
+      --ink-2: #293349;
+      --muted: #667085;
+      --muted-2: #98a2b3;
+      --line: rgba(15, 23, 42, .08);
+      --line-strong: rgba(15, 23, 42, .13);
+      --blue: #2457f5;
+      --blue-deep: #1537c8;
+      --violet: #6d4aff;
+      --pink: #fe2c55;
+      --cyan: #22d3ee;
+      --green: #0f9f6e;
+      --red: #e5484d;
+      --shadow-sm: 0 1px 2px rgba(13, 28, 72, .04), 0 8px 24px -16px rgba(13, 28, 72, .18);
+      --shadow-lg: 0 36px 90px -42px rgba(13, 28, 72, .36), 0 4px 14px rgba(13, 28, 72, .05);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --font: "SF Pro Display", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--font);
+      background:
+        radial-gradient(1100px 680px at 6% -12%, rgba(36, 87, 245, .11), transparent 62%),
+        radial-gradient(900px 600px at 98% 0%, rgba(254, 44, 85, .075), transparent 60%),
+        radial-gradient(820px 620px at 50% 110%, rgba(34, 211, 238, .07), transparent 66%),
+        var(--bg);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(15, 23, 42, .034) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, .034) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 20%, #000 10%, transparent 78%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 20%, #000 10%, transparent 78%);
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: .28;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.26'/%3E%3C/svg%3E");
+      mix-blend-mode: multiply;
+    }
+    body.no-scroll { overflow: hidden; }
+    button, textarea { font: inherit; }
+    button { color: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; text-decoration: none; }
+    img, video { display: block; max-width: 100%; }
+    [hidden] { display: none !important; }
+    ::selection { background: rgba(36, 87, 245, .16); }
+
+    .container { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
+    .icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .icon.fill { fill: currentColor; stroke: none; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    :focus-visible { outline: 3px solid rgba(36, 87, 245, .32); outline-offset: 3px; }
+
+    /* ---------- header ---------- */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 88px;
+      gap: 24px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 12px; flex: none; }
+    .brand-mark {
+      position: relative;
+      width: 42px; height: 42px;
+      display: grid; place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(145deg, #2f6bff 0%, #2457f5 46%, #6d4aff 100%);
+      box-shadow: 0 10px 24px -10px rgba(36, 87, 245, .7), inset 0 1px 0 rgba(255,255,255,.36);
+    }
+    .brand-mark svg { width: 21px; height: 21px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.18)); }
+    .brand-mark::after {
+      content: "";
+      position: absolute; right: -3px; bottom: -3px;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: linear-gradient(135deg, #ff5a79, var(--pink));
+      border: 2.5px solid var(--bg);
+    }
+    .brand-copy { display: flex; flex-direction: column; line-height: 1; }
+    .brand-copy strong { font-size: 17px; font-weight: 800; letter-spacing: .03em; }
+    .brand-copy small { margin-top: 6px; font-size: 8.5px; font-weight: 700; letter-spacing: .2em; color: var(--muted-2); }
+    .nav { display: flex; align-items: center; gap: 30px; }
+    .nav a { font-size: 13.5px; font-weight: 600; color: var(--muted); transition: color .2s; }
+    .nav a:hover { color: var(--ink); }
+    .nav-status {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 34px; padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.65);
+      font-size: 12px; font-weight: 600; color: var(--ink-2);
+      box-shadow: 0 1px 0 rgba(255,255,255,.7) inset;
+    }
+    .nav-status i {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #2fbe8f;
+      box-shadow: 0 0 0 4px rgba(47, 190, 143, .12);
+      animation: statusPulse 2.8s ease-in-out infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(47, 190, 143, .10); }
+      50% { box-shadow: 0 0 0 6px rgba(47, 190, 143, .03); }
+    }
+
+    /* ---------- hero ---------- */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(390px, .92fr);
+      align-items: center;
+      gap: 24px;
+      padding: 54px 0 54px;
+    }
+    .hero-copy { position: relative; z-index: 2; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px;
+      height: 32px; padding: 0 13px;
+      border: 1px solid rgba(36, 87, 245, .16);
+      border-radius: 999px;
+      background: rgba(255,255,255,.68);
+      color: #24407f;
+      font-size: 12px; font-weight: 700; letter-spacing: .045em;
+      box-shadow: 0 4px 18px -12px rgba(36, 87, 245, .44);
+      backdrop-filter: blur(10px);
+    }
+    .eyebrow .spark { width: 14px; height: 14px; color: var(--blue); }
+    .hero h1 {
+      margin: 22px 0 0;
+      font-size: clamp(44px, 5.7vw, 76px);
+      line-height: 1.045;
+      font-weight: 850;
+      letter-spacing: -.055em;
+      color: var(--ink);
+    }
+    .hero h1 .grad {
+      position: relative;
+      display: inline-block;
+      background: linear-gradient(96deg, #2457f5 0%, #6d4aff 48%, #fe2c55 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero h1 .grad::after {
+      content: "";
+      position: absolute;
+      left: 1%; right: 2%; bottom: .04em;
+      height: .075em;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(36,87,245,.24), rgba(254,44,85,.24));
+      transform: rotate(-1.2deg);
+    }
+    .lede {
+      max-width: 545px;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.9;
+      letter-spacing: .005em;
+    }
+    .trust-row {
+      display: flex; flex-wrap: wrap; gap: 10px 20px;
+      margin-top: 26px;
+      color: var(--ink-2);
+      font-size: 12.5px; font-weight: 600;
+    }
+    .trust-row span { display: inline-flex; align-items: center; gap: 7px; }
+    .trust-row .icon { width: 15px; height: 15px; color: var(--blue); }
+
+    /* ---------- hero art ---------- */
+    .hero-art { position: relative; height: 438px; min-width: 0; perspective: 1100px; }
+    .art-orbit {
+      position: absolute; inset: 32px 5px 12px 18px;
+      border-radius: 50%;
+      border: 1px dashed rgba(36, 87, 245, .18);
+      transform: rotate(-12deg) scaleY(.78);
+    }
+    .art-orbit::after {
+      content: "";
+      position: absolute; width: 8px; height: 8px; border-radius: 50%;
+      right: 16%; top: 13%;
+      background: var(--pink);
+      box-shadow: 0 0 0 6px rgba(254, 44, 85, .10);
+    }
+    .art-card {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 258px; height: 410px;
+      padding: 8px;
+      border-radius: 38px;
+      background: linear-gradient(155deg, rgba(255,255,255,.98), rgba(230,236,250,.94));
+      border: 1px solid rgba(255,255,255,.95);
+      box-shadow:
+        0 54px 90px -42px rgba(17, 33, 84, .48),
+        0 12px 32px -18px rgba(17, 33, 84, .28),
+        inset 0 1px 1px rgba(255,255,255,.9);
+      transform: translate(-50%, -50%) rotate(-7deg) rotateY(-4deg);
+      animation: cardFloat 7s ease-in-out infinite;
+    }
+    @keyframes cardFloat {
+      0%, 100% { transform: translate(-50%, -50%) rotate(-7deg) rotateY(-4deg) translateY(0); }
+      50% { transform: translate(-50%, -50%) rotate(-6.2deg) rotateY(-2deg) translateY(-9px); }
+    }
+    .art-screen {
+      position: relative;
+      height: 100%;
+      border-radius: 31px;
+      overflow: hidden;
+      color: #fff;
+      background:
+        radial-gradient(120% 72% at 50% 110%, rgba(36, 87, 245, .65), transparent 55%),
+        linear-gradient(165deg, #101a36 0%, #0a1020 52%, #121a33 100%);
+      isolation: isolate;
+    }
+    .art-screen::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(80% 58% at 50% 34%, rgba(254, 44, 85, .32), transparent 62%),
+        linear-gradient(180deg, transparent 55%, rgba(5, 9, 20, .7));
+      z-index: 1;
+    }
+    .art-screen::after {
+      content: "";
+      position: absolute; inset: 0;
+      opacity: .18;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 4;
+      mix-blend-mode: soft-light;
+    }
+    .art-top {
+      position: relative; z-index: 5;
+      display: flex; align-items: center; gap: 7px;
+      padding: 17px 16px;
+      font-size: 9px; font-weight: 600; color: rgba(255,255,255,.82);
+      letter-spacing: .02em;
+    }
+    .art-avatar {
+      width: 19px; height: 19px; border-radius: 50%;
+      background: linear-gradient(135deg, #fbbf24, #fe2c55);
+      border: 1px solid rgba(255,255,255,.55);
+    }
+    .art-live {
+      margin-left: auto;
+      padding: 3px 6px;
+      border-radius: 5px;
+      background: rgba(254, 44, 85, .9);
+      color: #fff;
+      font-size: 7px; font-weight: 800; letter-spacing: .08em;
+    }
+    .art-sun {
+      position: absolute; z-index: 0;
+      width: 142px; height: 142px;
+      left: 52%; top: 27%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 32%, #ffd8a8 0%, #ff8c69 32%, #fe2c55 68%, #9f1239 100%);
+      filter: blur(.2px);
+      box-shadow: 0 0 70px rgba(254, 44, 85, .4);
+    }
+    .art-hills {
+      position: absolute; left: -20%; right: -20%; bottom: 0;
+      height: 46%;
+      border-radius: 50% 50% 0 0;
+      z-index: 2;
+    }
+    .art-hills.h1 {
+      bottom: 5%;
+      background: linear-gradient(180deg, rgba(38, 55, 99, .1), #111b34 70%);
+      transform: rotate(-5deg);
+    }
+    .art-hills.h2 {
+      bottom: -8%;
+      height: 39%;
+      background: linear-gradient(180deg, #162345, #080d19 72%);
+      transform: rotate(6deg);
+    }
+    .art-play {
+      position: absolute; z-index: 6;
+      left: 50%; top: 47%;
+      width: 56px; height: 56px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.36);
+      box-shadow: 0 10px 30px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.28);
+      backdrop-filter: blur(12px);
+      transform: translate(-50%, -50%);
+    }
+    .art-play .icon { width: 20px; height: 20px; margin-left: 2px; color: #fff; }
+    .art-caption {
+      position: absolute; z-index: 6;
+      left: 19px; right: 19px; bottom: 42px;
+      font-size: 14px; line-height: 1.55; font-weight: 700; letter-spacing: -.02em;
+      text-shadow: 0 2px 12px rgba(0,0,0,.32);
+    }
+    .art-ui {
+      position: absolute; z-index: 6; left: 19px; right: 19px; bottom: 18px;
+      display: flex; gap: 4px;
+    }
+    .art-ui span { height: 3px; flex: 1; border-radius: 99px; background: rgba(255,255,255,.22); }
+    .art-ui span:first-child { flex: 1.7; background: linear-gradient(90deg, #fff, rgba(255,255,255,.55)); }
+    .art-chip {
+      position: absolute; z-index: 8;
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 36px; padding: 0 13px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.8);
+      border: 1px solid rgba(255,255,255,.94);
+      box-shadow: 0 14px 34px -18px rgba(13, 28, 72, .34), 0 1px 0 rgba(255,255,255,.9) inset;
+      backdrop-filter: blur(18px);
+      font-size: 11.5px; font-weight: 700; color: var(--ink-2);
+      white-space: nowrap;
+    }
+    .art-chip .icon { width: 14px; height: 14px; color: var(--blue); }
+    .art-chip b { font-size: 12px; color: var(--blue); letter-spacing: -.02em; }
+    .chip-a { left: -8px; top: 88px; animation: chipFloat 6s ease-in-out infinite; }
+    .chip-b { right: -20px; top: 190px; animation: chipFloat 6s ease-in-out .8s infinite; }
+    .chip-c { left: 2px; bottom: 58px; animation: chipFloat 6s ease-in-out 1.6s infinite; }
+    @keyframes chipFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .art-stamp {
+      position: absolute; right: 10px; top: 6px;
+      z-index: 7;
+      font-size: 8px; font-weight: 800; letter-spacing: .24em;
+      line-height: 1.7; text-align: center;
+      color: rgba(36, 87, 245, .27);
+      transform: rotate(8deg);
+      border: 1px solid rgba(36, 87, 245, .15);
+      border-radius: 50%;
+      width: 64px; height: 64px;
+      display: grid; place-items: center;
+    }
+
+    /* ---------- extractor panel ---------- */
+    .panel {
+      position: relative;
+      z-index: 4;
+      padding: 25px 26px 22px;
+      border-radius: var(--radius-xl);
+      background: rgba(255,255,255,.84);
+      border: 1px solid rgba(255,255,255,.94);
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(15, 23, 42, .035);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      animation: riseIn .7s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .panel::before {
+      content: "";
+      position: absolute; left: 26px; right: 26px; top: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(36,87,245,.4), rgba(254,44,85,.35), transparent);
+    }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 15px; }
+    .panel-label { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 700; color: var(--ink-2); }
+    .step-no {
+      display: inline-grid; place-items: center;
+      width: 25px; height: 25px;
+      border-radius: 8px;
+      background: #eff3ff;
+      color: var(--blue);
+      font-size: 10px; font-weight: 800; letter-spacing: .04em;
+      border: 1px solid rgba(36, 87, 245, .1);
+    }
+    .quick-actions { display: flex; gap: 8px; }
+    .mini-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 33px; padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s, transform .15s;
+    }
+    .mini-btn .icon { width: 14px; height: 14px; }
+    .mini-btn:hover { color: var(--blue); border-color: rgba(36,87,245,.25); background: #f7f9ff; }
+    .mini-btn:active { transform: scale(.97); }
+    .field {
+      position: relative;
+      padding: 16px 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-lg);
+      background: rgba(248, 250, 252, .86);
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      overflow: hidden;
+    }
+    .field:focus-within {
+      border-color: rgba(36, 87, 245, .52);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(36, 87, 245, .08);
+    }
+    .field.has-error {
+      border-color: rgba(229, 72, 77, .5);
+      background: #fff9f9;
+      box-shadow: 0 0 0 4px rgba(229, 72, 77, .065);
+    }
+    .field textarea {
+      display: block;
+      width: 100%;
+      min-height: 78px;
+      max-height: 160px;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      resize: none;
+      background: transparent;
+      color: var(--ink);
+      font-size: 15.5px;
+      line-height: 1.75;
+      letter-spacing: .005em;
+    }
+    .field textarea::placeholder { color: #a8b1c2; }
+    .field textarea:disabled { opacity: .65; }
+    .field::after {
+      content: "";
+      position: absolute; left: 0; right: 0; top: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue), var(--cyan), var(--pink), transparent);
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    .panel.is-loading .field::after { opacity: 1; animation: scan 1.4s ease-in-out infinite; }
+    @keyframes scan {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .panel-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 18px;
+      margin-top: 14px;
+    }
+    .hint {
+      display: inline-flex; align-items: center; flex-wrap: wrap; gap: 5px;
+      color: var(--muted-2);
+      font-size: 11.5px;
+      line-height: 1.6;
+    }
+    .kbd {
+      display: inline-grid; place-items: center;
+      min-width: 21px; height: 20px; padding: 0 5px;
+      margin-left: 3px;
+      border: 1px solid var(--line);
+      border-bottom-color: rgba(15,23,42,.18);
+      border-radius: 5px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 9.5px; font-weight: 700;
+      box-shadow: 0 1px 0 rgba(15,23,42,.04);
+    }
+    .btn-primary {
+      position: relative;
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      height: 50px; padding: 0 23px;
+      border: 0;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #2457f5 0%, #3d63ff 62%, #6d4aff 100%);
+      color: #fff;
+      font-size: 14px; font-weight: 700; letter-spacing: .015em;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 14px 28px -14px rgba(36, 87, 245, .7), inset 0 1px 0 rgba(255,255,255,.24);
+      transition: transform .18s, box-shadow .2s, filter .2s;
+      overflow: hidden;
+    }
+    .btn-primary::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.22) 46%, transparent 66%);
+      transform: translateX(-120%);
+      transition: transform .6s ease;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 18px 34px -14px rgba(36, 87, 245, .8), inset 0 1px 0 rgba(255,255,255,.25); }
+    .btn-primary:hover::before { transform: translateX(120%); }
+    .btn-primary:active { transform: translateY(0) scale(.99); }
+    .btn-primary:disabled { cursor: wait; filter: saturate(.88); transform: none; }
+    .btn-primary .btn-arrow { width: 17px; height: 17px; transition: transform .2s; }
+    .btn-primary:hover .btn-arrow { transform: translateX(2px); }
+    .btn-primary .btn-loading { display: none; align-items: center; gap: 9px; }
+    .btn-primary.is-loading .btn-main, .btn-primary.is-loading .btn-arrow { display: none; }
+    .btn-primary.is-loading .btn-loading { display: inline-flex; }
+    .btn-main { display: inline-flex; align-items: center; gap: 8px; }
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,.32);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      display: flex; align-items: flex-start; gap: 9px;
+      margin-top: 13px; padding: 11px 13px;
+      border: 1px solid rgba(229, 72, 77, .18);
+      border-radius: 13px;
+      background: rgba(255, 240, 240, .72);
+      color: #b4232b;
+      font-size: 12.5px; line-height: 1.6;
+      animation: shake .34s ease;
+    }
+    .error-box .icon { width: 15px; height: 15px; margin-top: 1px; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+    .panel-trust {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+      margin-top: 17px; padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted-2);
+      font-size: 11px;
+    }
+    .panel-trust span { display: inline-flex; align-items: center; gap: 6px; }
+    .panel-trust .icon { width: 13px; height: 13px; color: #8fa7d9; }
+    .panel-trust .dot { width: 3px; height: 3px; border-radius: 50%; background: #d5dbe7; }
+
+    /* ---------- result ---------- */
+    .result {
+      position: relative;
+      margin-top: 22px;
+      scroll-margin-top: 18px;
+      border-radius: var(--radius-xl);
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(255,255,255,.96);
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(15,23,42,.035);
+      overflow: hidden;
+      backdrop-filter: blur(22px);
+      animation: resultIn .55s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes resultIn {
+      from { opacity: 0; transform: translateY(20px) scale(.992); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .result::before {
+      content: "";
+      position: absolute; left: 0; right: 0; top: 0; height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan) 35%, var(--violet) 68%, var(--pink));
+      opacity: .9;
+    }
+    .result-glow {
+      position: absolute; width: 300px; height: 300px; border-radius: 50%;
+      right: -100px; top: -160px;
+      background: rgba(36, 87, 245, .08);
+      filter: blur(40px);
+      pointer-events: none;
+    }
+    .result-head {
+      position: relative;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 21px 24px 0;
+    }
+    .result-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 26px; padding: 0 9px;
+      border-radius: 7px;
+      background: #f2f4f8;
+      color: var(--muted);
+      font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
+    }
+    .badge.success { background: rgba(15, 159, 110, .09); color: #087a55; }
+    .badge.success i { width: 5px; height: 5px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.11); }
+    .badge.accent { background: rgba(254, 44, 85, .075); color: #d21f46; }
+    .badge.soft { background: #f4f6fb; color: #68758d; }
+    .icon-btn {
+      display: grid; place-items: center;
+      width: 34px; height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .2s, color .2s, border-color .2s;
+    }
+    .icon-btn:hover { background: #f7f9ff; color: var(--ink); border-color: var(--line-strong); }
+    .icon-btn .icon { width: 16px; height: 16px; }
+    .result-body {
+      display: grid;
+      grid-template-columns: minmax(300px, .88fr) minmax(0, 1.12fr);
+      gap: 26px;
+      padding: 19px 24px 24px;
+    }
+    .media-col { min-width: 0; display: flex; flex-direction: column; justify-content: flex-start; }
+    .result-body:not(.is-images) .media-col { justify-content: center; }
+    .video-stage {
+      position: relative;
+      display: grid; place-items: center;
+      aspect-ratio: 3 / 4;
+      max-height: 590px;
+      border-radius: 21px;
+      overflow: hidden;
+      background:
+        radial-gradient(100% 80% at 50% 0%, rgba(36,87,245,.12), transparent 60%),
+        #080d18;
+      border: 1px solid rgba(15,23,42,.08);
+    }
+    .video-stage.is-landscape { aspect-ratio: 16 / 9; max-height: none; }
+    .video-stage video {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      background: #080d18;
+    }
+    .video-stage video.is-hidden { display: none; }
+    .preview-label {
+      position: absolute; left: 12px; top: 12px;
+      z-index: 2;
+      height: 23px; padding: 0 8px;
+      display: inline-flex; align-items: center;
+      border-radius: 6px;
+      background: rgba(8, 13, 24, .55);
+      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.82);
+      font-size: 9px; font-weight: 700; letter-spacing: .12em;
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+    }
+    .video-fallback {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      padding: 24px;
+      color: rgba(255,255,255,.7);
+      text-align: center;
+      font-size: 12px; line-height: 1.7;
+      background: #080d18;
+    }
+    .video-fallback .icon { width: 26px; height: 26px; color: rgba(255,255,255,.38); }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(154px, 1fr));
+      gap: 11px;
+    }
+    .gallery.count-1 { grid-template-columns: minmax(0, 380px); }
+    .gallery.count-2 { max-width: 800px; }
+    .result-body.is-multi-images { display: flex; flex-direction: column; }
+    .result-body.is-multi-images .meta-col { order: 1; max-width: 900px; }
+    .result-body.is-multi-images .media-col { order: 2; width: 100%; margin-top: 5px; }
+    .result-body.is-multi-images .gallery { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+    .result-body.is-multi-images .actions { margin-top: 18px; }
+    .shot {
+      position: relative;
+      margin: 0;
+      aspect-ratio: 3 / 4;
+      border-radius: 15px;
+      overflow: hidden;
+      background: #eef1f7;
+      border: 1px solid rgba(15,23,42,.07);
+      isolation: isolate;
+    }
+    .shot img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .45s cubic-bezier(.22,1,.36,1);
+    }
+    .shot:hover img { transform: scale(1.035); }
+    .shot-open {
+      position: absolute; inset: 0;
+      z-index: 1;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: zoom-in;
+    }
+    .shot-index {
+      position: absolute; left: 9px; top: 9px;
+      min-width: 22px; height: 20px; padding: 0 5px;
+      display: inline-grid; place-items: center;
+      border-radius: 5px;
+      background: rgba(8, 13, 24, .55);
+      color: rgba(255,255,255,.9);
+      font-size: 9px; font-weight: 700; letter-spacing: .06em;
+      backdrop-filter: blur(8px);
+    }
+    .shot-save {
+      position: absolute; right: 9px; bottom: 9px;
+      z-index: 2;
+      display: grid; place-items: center;
+      width: 31px; height: 31px;
+      border: 1px solid rgba(255,255,255,.32);
+      border-radius: 9px;
+      background: rgba(8, 13, 24, .48);
+      color: #fff;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity .2s, transform .2s, background .2s;
+      backdrop-filter: blur(9px);
+    }
+    .shot:hover .shot-save, .shot:focus-within .shot-save { opacity: 1; transform: translateY(0); }
+    .shot-save:hover { background: var(--blue); }
+    .shot-save .icon { width: 14px; height: 14px; }
+    .shot-save.is-loading .icon { display: none; }
+    .shot-save.is-loading::after {
+      content: ""; width: 12px; height: 12px;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    .meta-col { min-width: 0; display: flex; flex-direction: column; }
+    .author-row { display: flex; align-items: center; gap: 11px; }
+    .avatar {
+      position: relative;
+      width: 42px; height: 42px;
+      flex: none;
+      border-radius: 50%;
+      overflow: hidden;
+      background: linear-gradient(135deg, #c7d7ff, #e9d5ff 55%, #ffd7df);
+      border: 1px solid rgba(255,255,255,.9);
+      box-shadow: 0 4px 12px -6px rgba(13,28,72,.3);
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
+    .avatar img.is-hidden { display: none; }
+    .avatar span {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      color: #33406a;
+      font-size: 15px; font-weight: 800;
+    }
+    .author-copy { min-width: 0; }
+    .author-name { margin: 0; font-size: 13px; font-weight: 700; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .author-sub { margin: 3px 0 0; font-size: 10.5px; color: var(--muted-2); letter-spacing: .04em; }
+    .work-title {
+      margin: 17px 0 0;
+      font-size: 18px;
+      line-height: 1.62;
+      font-weight: 650;
+      letter-spacing: -.015em;
+      color: var(--ink);
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+    }
+    .work-title.is-expanded { display: block; -webkit-line-clamp: unset; }
+    .title-toggle {
+      align-self: flex-start;
+      margin-top: 5px; padding: 0;
+      border: 0; background: transparent;
+      color: var(--blue);
+      font-size: 11px; font-weight: 700;
+      cursor: pointer;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-top: 19px;
+      padding: 11px 4px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .stat { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+    .stat-top { display: inline-flex; align-items: center; gap: 5px; color: var(--muted-2); }
+    .stat-top .icon { width: 13px; height: 13px; }
+    .stat-value { font-size: 12.5px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+    .file-meta {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0;
+      margin-top: 15px;
+      color: var(--muted-2);
+      font-size: 11px; letter-spacing: .01em;
+    }
+    .file-meta span + span::before { content: "·"; margin: 0 8px; color: #cbd3e1; }
+    .asset-note {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 15px; padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: linear-gradient(135deg, #f8faff, #ffffff 72%);
+    }
+    .asset-icon {
+      width: 32px; height: 32px; flex: none;
+      display: grid; place-items: center;
+      border-radius: 9px;
+      background: #eef3ff;
+      color: var(--blue);
+    }
+    .asset-icon .icon { width: 15px; height: 15px; }
+    .asset-copy { min-width: 0; }
+    .asset-copy strong { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-2); }
+    .asset-copy span { display: block; margin-top: 3px; font-size: 9.5px; color: var(--muted-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .asset-tag {
+      margin-left: auto; flex: none;
+      height: 21px; padding: 0 7px;
+      display: inline-flex; align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted-2);
+      font-size: 8.5px; font-weight: 800; letter-spacing: .09em;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: auto; padding-top: 20px; }
+    .btn-save {
+      position: relative;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-width: 164px; height: 47px; padding: 0 20px;
+      border: 0; border-radius: 14px;
+      background: linear-gradient(135deg, #1c43dc, #2457f5 58%, #5b45f2);
+      color: #fff;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer;
+      overflow: hidden;
+      box-shadow: 0 13px 28px -15px rgba(36,87,245,.84), inset 0 1px 0 rgba(255,255,255,.22);
+      transition: transform .18s, box-shadow .2s;
+    }
+    .btn-save:hover { transform: translateY(-1px); box-shadow: 0 17px 32px -15px rgba(36,87,245,.9); }
+    .btn-save:active { transform: translateY(0) scale(.995); }
+    .btn-save:disabled { cursor: wait; transform: none; }
+    .btn-save .icon { width: 16px; height: 16px; }
+    .btn-save .save-progress {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: var(--p, 0%);
+      background: rgba(255,255,255,.17);
+      transition: width .16s linear;
+    }
+    .btn-save > * { position: relative; z-index: 1; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      height: 47px; padding: 0 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: color .2s, border-color .2s, background .2s;
+    }
+    .btn-ghost:hover { color: var(--ink); border-color: rgba(36,87,245,.28); background: #f8faff; }
+    .btn-ghost .icon { width: 14px; height: 14px; }
+    .result-note {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 14px;
+      color: var(--muted-2);
+      font-size: 10.5px;
+    }
+    .result-note .icon { width: 13px; height: 13px; color: #92a3c2; }
+
+    /* ---------- sections ---------- */
+    .section { padding: 78px 0 0; }
+    .section-head { max-width: 660px; margin-bottom: 34px; }
+    .section-kicker {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--blue);
+      font-size: 10.5px; font-weight: 800; letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .section-kicker::before { content: ""; width: 20px; height: 1px; background: var(--blue); opacity: .55; }
+    .section-head h2 {
+      margin: 12px 0 0;
+      font-size: clamp(28px, 3.5vw, 42px);
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: -.04em;
+    }
+    .section-head p { margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .step-card {
+      position: relative;
+      min-height: 190px;
+      padding: 24px 22px 22px;
+      border-radius: var(--radius-lg);
+      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(255,255,255,.92);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: transform .25s, box-shadow .25s, background .25s;
+    }
+    .step-card:hover { transform: translateY(-3px); background: #fff; box-shadow: 0 22px 44px -30px rgba(13,28,72,.3); }
+    .step-index {
+      position: absolute; right: 18px; top: 6px;
+      font-size: 64px; line-height: 1; font-weight: 850; letter-spacing: -.07em;
+      color: rgba(36, 87, 245, .075);
+      pointer-events: none;
+    }
+    .step-icon {
+      display: grid; place-items: center;
+      width: 41px; height: 41px;
+      border-radius: 12px;
+      background: #f0f4ff;
+      border: 1px solid rgba(36,87,245,.09);
+      color: var(--blue);
+    }
+    .step-icon .icon { width: 19px; height: 19px; }
+    .step-card h3 { margin: 17px 0 0; font-size: 15px; font-weight: 750; letter-spacing: -.01em; }
+    .step-card p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.75; }
+
+    .faq-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 42px;
+      align-items: start;
+      padding-bottom: 26px;
+    }
+    .faq-list { display: flex; flex-direction: column; gap: 9px; }
+    .faq-item {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255,255,255,.66);
+      transition: background .2s, border-color .2s;
+    }
+    .faq-item[open] { background: rgba(255,255,255,.92); border-color: rgba(36,87,245,.15); }
+    .faq-item summary {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 16px 18px;
+      list-style: none;
+      cursor: pointer;
+      font-size: 13.5px; font-weight: 650; color: var(--ink-2);
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary .plus {
+      position: relative; width: 15px; height: 15px; flex: none;
+      transition: transform .25s;
+    }
+    .faq-item summary .plus::before, .faq-item summary .plus::after {
+      content: ""; position: absolute; left: 50%; top: 50%;
+      width: 12px; height: 1.5px; border-radius: 99px;
+      background: var(--muted-2); transform: translate(-50%, -50%);
+    }
+    .faq-item summary .plus::after { transform: translate(-50%, -50%) rotate(90deg); transition: opacity .2s; }
+    .faq-item[open] summary .plus { transform: rotate(180deg); }
+    .faq-item[open] summary .plus::after { opacity: 0; }
+    .faq-answer { padding: 0 18px 17px; color: var(--muted); font-size: 12.5px; line-height: 1.85; }
+    .faq-answer a { color: var(--blue); font-weight: 600; }
+    .faq-aside {
+      position: sticky; top: 24px;
+      padding: 23px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(160deg, #101a36, #0a1020);
+      color: #fff;
+      box-shadow: 0 30px 60px -34px rgba(10, 16, 32, .7);
+      overflow: hidden;
+      contain: paint;
+    }
+    .faq-aside::before {
+      content: "";
+      position: absolute; width: 190px; height: 190px;
+      right: -80px; top: -90px; border-radius: 50%;
+      background: rgba(36, 87, 245, .45);
+      filter: blur(42px);
+    }
+    .faq-aside::after {
+      content: "";
+      position: absolute; width: 140px; height: 140px;
+      left: -70px; bottom: -80px; border-radius: 50%;
+      background: rgba(254, 44, 85, .28);
+      filter: blur(36px);
+    }
+    .faq-aside > * { position: relative; z-index: 1; }
+    .aside-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 25px; padding: 0 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.68);
+      font-size: 9px; font-weight: 700; letter-spacing: .1em;
+    }
+    .faq-aside h3 { margin: 15px 0 0; font-size: 19px; line-height: 1.45; font-weight: 750; letter-spacing: -.025em; }
+    .faq-aside p { margin: 10px 0 0; color: rgba(255,255,255,.52); font-size: 11.5px; line-height: 1.8; }
+    .aside-list { display: flex; flex-direction: column; gap: 9px; margin-top: 19px; }
+    .aside-list span { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,.75); font-size: 11.5px; }
+    .aside-list .icon { width: 14px; height: 14px; color: #7fa1ff; }
+
+    .footer {
+      margin-top: 84px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.34);
+    }
+    .footer-inner {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 36px;
+      padding: 34px 0 38px;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 10px; }
+    .footer-brand .brand-mark { width: 32px; height: 32px; border-radius: 10px; }
+    .footer-brand .brand-mark svg { width: 16px; height: 16px; }
+    .footer-brand .brand-mark::after { width: 9px; height: 9px; border-width: 2px; }
+    .footer-brand strong { font-size: 13px; font-weight: 800; letter-spacing: .06em; }
+    .footer-brand small { display: block; margin-top: 4px; font-size: 8px; color: var(--muted-2); letter-spacing: .16em; }
+    .footer-disclaimer { max-width: 560px; color: var(--muted-2); font-size: 10.5px; line-height: 1.9; text-align: right; }
+    .footer-disclaimer b { color: var(--muted); font-weight: 600; }
+    .footer-meta {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 15px 0 23px;
+      border-top: 1px solid var(--line);
+      color: #a3adbe;
+      font-size: 10px;
+    }
+    .footer-meta a { transition: color .2s; }
+    .footer-meta a:hover { color: var(--ink-2); }
+
+    /* ---------- toast ---------- */
+    .toast {
+      position: fixed; left: 50%; bottom: 30px;
+      z-index: 100;
+      display: inline-flex; align-items: center; gap: 8px;
+      max-width: calc(100vw - 36px);
+      padding: 10px 15px;
+      border-radius: 11px;
+      background: rgba(11, 18, 34, .92);
+      color: #fff;
+      font-size: 12px; font-weight: 500;
+      box-shadow: 0 16px 36px -18px rgba(0,0,0,.55);
+      backdrop-filter: blur(16px);
+      transform: translate(-50%, 14px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .24s, transform .24s;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast .icon { width: 14px; height: 14px; color: #7ce3bd; }
+    .toast.is-error .icon { color: #ff9b9b; }
+
+    /* ---------- lightbox ---------- */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 90;
+      display: flex; align-items: center; justify-content: center;
+      padding: 26px;
+      background: rgba(5, 9, 18, .86);
+      backdrop-filter: blur(18px);
+      animation: fadeIn .22s ease both;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .lightbox img {
+      max-width: min(100%, 980px);
+      max-height: calc(100vh - 120px);
+      border-radius: 14px;
+      box-shadow: 0 30px 80px -20px rgba(0,0,0,.6);
+      object-fit: contain;
+    }
+    .lightbox-close {
+      position: absolute; right: 22px; top: 22px;
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 50%;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      cursor: pointer;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,.16); }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px;
+      display: grid; place-items: center;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      color: #fff;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .lightbox-nav:hover { background: rgba(255,255,255,.16); }
+    .lightbox-nav.prev { left: 22px; }
+    .lightbox-nav.next { right: 22px; }
+    .lightbox-bar {
+      position: absolute; left: 50%; bottom: 22px;
+      display: flex; align-items: center; gap: 16px;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,.72);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .lightbox-bar button {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 34px; padding: 0 13px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 9px;
+      background: rgba(255,255,255,.1);
+      color: #fff;
+      font-size: 11px; font-weight: 600;
+      cursor: pointer;
+    }
+    .lightbox-bar button:hover { background: var(--blue); border-color: var(--blue); }
+    .lightbox-bar .icon { width: 13px; height: 13px; }
+
+    @media (max-width: 1020px) {
+      .hero { grid-template-columns: 1fr; padding-top: 40px; }
+      .hero-art { display: none; }
+      .hero h1 { max-width: 760px; }
+      .lede { max-width: 640px; }
+      .faq-wrap { grid-template-columns: 1fr; }
+      .faq-aside { position: static; max-width: 520px; }
+    }
+    @media (max-width: 760px) {
+      .container { width: calc(100% - 32px); }
+      .topbar { height: 74px; }
+      .nav a { display: none; }
+      .nav { gap: 0; }
+      .brand-copy strong { font-size: 16px; }
+      .hero { padding: 34px 0 28px; }
+      .hero h1 { font-size: clamp(38px, 11vw, 52px); margin-top: 18px; }
+      .lede { margin-top: 17px; font-size: 14px; line-height: 1.85; }
+      .trust-row { margin-top: 20px; gap: 9px 15px; font-size: 11.5px; }
+      .panel { padding: 19px 16px 17px; border-radius: 24px; }
+      .panel::before { left: 16px; right: 16px; }
+      .panel-head { margin-bottom: 12px; }
+      .panel-foot { flex-direction: column; align-items: stretch; gap: 11px; }
+      .btn-primary { width: 100%; height: 50px; }
+      .hint { order: 2; justify-content: center; font-size: 10.5px; }
+      .panel-trust { gap: 8px 13px; font-size: 10px; }
+      .panel-trust .dot { display: none; }
+      .result-head { padding: 18px 16px 0; }
+      .result-body { grid-template-columns: 1fr; gap: 18px; padding: 16px; }
+      .result-body.is-images .meta-col { order: 1; }
+      .result-body.is-images .media-col { order: 2; }
+      .video-stage { max-height: 520px; border-radius: 17px; }
+      .work-title { font-size: 16px; margin-top: 14px; }
+      .stats { margin-top: 15px; }
+      .actions { padding-top: 17px; }
+      .btn-save { flex: 1; min-width: 0; }
+      .btn-ghost { flex: none; }
+      .result-note { font-size: 10px; }
+      .section { padding-top: 56px; }
+      .section-head { margin-bottom: 24px; }
+      .steps { grid-template-columns: 1fr; gap: 10px; }
+      .step-card { min-height: 0; padding: 20px; }
+      .step-card p { max-width: 92%; }
+      .faq-wrap { gap: 26px; }
+      .faq-item summary { padding: 14px 15px; font-size: 12.5px; }
+      .faq-answer { padding: 0 15px 15px; font-size: 12px; }
+      .footer { margin-top: 54px; }
+      .footer-inner { flex-direction: column; gap: 18px; padding: 26px 0 28px; }
+      .footer-disclaimer { text-align: left; }
+      .footer-meta { padding-bottom: 18px; }
+      .gallery { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .gallery.count-1 { grid-template-columns: minmax(0, 300px); }
+      .gallery.count-2 { max-width: none; }
+      .result-body.is-multi-images .meta-col { max-width: none; }
+      .result-body.is-multi-images .gallery { grid-template-columns: repeat(2, 1fr); }
+      .shot { border-radius: 12px; }
+      .shot-save { opacity: 1; transform: none; width: 28px; height: 28px; }
+      .lightbox { padding: 14px; }
+      .lightbox-nav { width: 38px; height: 38px; }
+      .lightbox-nav.prev { left: 10px; }
+      .lightbox-nav.next { right: 10px; }
+      .lightbox img { max-height: calc(100vh - 130px); }
+      .lightbox-bar { bottom: 14px; }
+      .toast { bottom: 20px; }
+    }
+    @media (max-width: 380px) {
+      .topbar { gap: 12px; }
+      .nav-status { height: 30px; padding: 0 9px; gap: 6px; font-size: 10px; }
+      .brand-copy small { letter-spacing: .14em; }
+      .quick-actions .mini-btn span { display: none; }
+      .quick-actions .mini-btn { width: 33px; padding: 0; justify-content: center; }
+      .result-badges .badge:nth-child(3) { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body id="top">
+  <svg xmlns="http://www.w3.org/2000/svg" class="icon-sprite" aria-hidden="true">
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-paste" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1.2"/><path d="M9 12h6M9 16h4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6.5 7l.8 12.1A1.9 1.9 0 0 0 9.2 21h5.6a1.9 1.9 0 0 0 1.9-1.9L17.5 7M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.2 13.7 9l5.8 1.7-5.8 1.7L12 18.2l-1.7-5.8L4.5 10.7 10.3 9 12 3.2Z"/><path d="M19 16.5v3M17.5 18h3"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4.5 12h15M13 5.5l6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M5 20.5h14"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10.2 13.8a4.5 4.5 0 0 0 6.4 0l2.2-2.2a4.5 4.5 0 0 0-6.4-6.4L11 6.6"/><path d="M13.8 10.2a4.5 4.5 0 0 0-6.4 0l-2.2 2.2a4.5 4.5 0 0 0 6.4 6.4l1.4-1.4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.4 4.2 4.2L19 6.8"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 7 3v6c0 4.1-3 7.5-7 9-4-1.5-7-4.9-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.2"/><circle cx="9" cy="10" r="1.5"/><path d="m5.5 17 4.8-4.8a2 2 0 0 1 2.8 0l4.8 4.8"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="3"/><path d="m10.3 9.4 4.4 2.6-4.4 2.6z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.3-4.4-7.3-9.6A4.2 4.2 0 0 1 12 7.8a4.2 4.2 0 0 1 7.3 2.6C19.3 15.6 12 20 12 20Z"/></symbol>
+    <symbol id="i-comment" viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3-.5L4 20l1.5-4A7.4 7.4 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6.5 4.5h11v16L12 17l-5.5 3.5z"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.3"/><circle cx="18" cy="6" r="2.3"/><circle cx="18" cy="18" r="2.3"/><path d="m8.2 10.9 7.6-3.8M8.2 13.1l7.6 3.8"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V6.5l10-2v11"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></symbol>
+  </svg>
+
+  <header class="topbar container">
+    <a class="brand" href="#top" aria-label="憨憨去水印首页">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z" fill="#fff"/></svg>
+      </span>
+      <span class="brand-copy">
+        <strong>憨憨去水印</strong>
+        <small>DOUYIN CLEAN</small>
+      </span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="#how">使用方法</a>
+      <a href="#faq">常见问题</a>
+      <span class="nav-status"><i></i>免登录 · 即开即用</span>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-copy">
+        <div class="eyebrow">
+          <svg class="icon spark" aria-hidden="true"><use href="#i-spark"/></svg>
+          无水印 · 原画质 · 免登录
+        </div>
+        <h1 id="heroTitle">喜欢的作品，<br><span class="grad">干干净净</span>带走。</h1>
+        <p class="lede">粘贴抖音分享链接，一键提取视频或图集。自动去除平台水印，保留原声与高清画质，存进自己的设备。</p>
+        <div class="trust-row" aria-label="功能特点">
+          <span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>视频 / 图集</span>
+          <span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>最高 1080P</span>
+          <span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>保留原声</span>
+          <span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>无需登录</span>
+        </div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <div class="art-orbit"></div>
+        <div class="art-stamp">NO<br>WATER<br>MARK</div>
+        <div class="art-card">
+          <div class="art-screen">
+            <div class="art-top">
+              <span class="art-avatar"></span>
+              <span>@ 林间来信</span>
+              <span class="art-live">LIVE</span>
+            </div>
+            <div class="art-sun"></div>
+            <div class="art-hills h1"></div>
+            <div class="art-hills h2"></div>
+            <div class="art-play"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg></div>
+            <div class="art-caption">把喜欢的瞬间，<br>留在自己的设备里。</div>
+            <div class="art-ui"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="art-chip chip-a"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>已去水印</div>
+        <div class="art-chip chip-b"><b>1080P</b> 原画质</div>
+        <div class="art-chip chip-c"><svg class="icon" aria-hidden="true"><use href="#i-image"/></svg>视频 / 图集</div>
+      </div>
+    </section>
+
+    <section class="panel" id="extractor" aria-labelledby="panelTitle">
+      <div class="panel-head">
+        <div class="panel-label" id="panelTitle"><span class="step-no">01</span>粘贴作品链接</div>
+        <div class="quick-actions">
+          <button class="mini-btn" id="pasteBtn" type="button" title="从剪贴板粘贴 (Ctrl+V)">
+            <svg class="icon" aria-hidden="true"><use href="#i-paste"/></svg><span>粘贴</span>
+          </button>
+          <button class="mini-btn" id="clearBtn" type="button" title="清空输入">
+            <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg><span>清除</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="sr-only" for="urlInput">抖音作品链接</label>
+        <textarea id="urlInput" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false"
+          placeholder="粘贴抖音分享链接，例如：https://v.douyin.com/xxxx/&#10;也可以直接粘贴整段分享口令"></textarea>
+      </div>
+
+      <div class="panel-foot">
+        <div class="hint">
+          支持分享口令、短链接、作品链接
+          <span class="kbd">Ctrl</span><span>+</span><span class="kbd">Enter</span>
+        </div>
+        <button class="btn-primary" id="extractBtn" type="button">
+          <span class="btn-main">
+            <svg class="icon" aria-hidden="true"><use href="#i-spark"/></svg>一键提取
+          </span>
+          <span class="btn-loading" aria-hidden="true">
+            <span class="spinner"></span><span id="extractText">正在识别链接…</span>
+          </span>
+          <svg class="icon btn-arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </button>
+      </div>
+
+      <div class="error-box" id="errorBox" role="alert" hidden>
+        <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+        <span id="errorText"></span>
+      </div>
+
+      <div class="panel-trust" aria-label="解析说明">
+        <span><svg class="icon" aria-hidden="true"><use href="#i-video"/></svg>视频去水印</span>
+        <span class="dot"></span>
+        <span><svg class="icon" aria-hidden="true"><use href="#i-image"/></svg>图集原图</span>
+        <span class="dot"></span>
+        <span><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>不登录、不收集账号信息</span>
+        <span class="dot"></span>
+        <span>仅供个人备份使用</span>
+      </div>
+    </section>
+
+    <section class="result" id="result" aria-labelledby="workTitle" hidden>
+      <div class="result-glow" aria-hidden="true"></div>
+      <div class="result-head">
+        <div class="result-badges">
+          <span class="badge success"><i></i>解析成功</span>
+          <span class="badge accent" id="typeBadge">视频</span>
+          <span class="badge soft" id="qualityBadge">高清</span>
+          <span class="badge soft" id="watermarkBadge">已去水印</span>
+        </div>
+        <button class="icon-btn" id="closeResult" type="button" title="关闭结果" aria-label="关闭结果">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+
+      <div class="result-body" id="resultBody">
+        <div class="media-col">
+          <div class="video-stage" id="videoStage">
+            <span class="preview-label">PREVIEW</span>
+            <video id="videoPlayer" controls playsinline preload="metadata" referrerpolicy="no-referrer"></video>
+            <div class="video-fallback" id="videoFallback" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-video"/></svg>
+              <span>预览加载失败<br>仍可直接保存视频文件</span>
+            </div>
+          </div>
+          <div class="gallery" id="gallery" hidden></div>
+        </div>
+
+        <div class="meta-col">
+          <div class="author-row">
+            <div class="avatar" id="authorAvatar">
+              <span id="authorInitial">抖</span>
+              <img id="authorImg" alt="" referrerpolicy="no-referrer">
+            </div>
+            <div class="author-copy">
+              <p class="author-name" id="authorName">抖音创作者</p>
+              <p class="author-sub">DOUYIN CREATOR</p>
+            </div>
+          </div>
+
+          <h2 class="work-title" id="workTitle"></h2>
+          <button class="title-toggle" id="titleToggle" type="button" hidden>展开全文</button>
+
+          <div class="stats" id="stats" aria-label="作品数据"></div>
+          <div class="file-meta" id="fileMeta"></div>
+          <div class="asset-note">
+            <span class="asset-icon"><svg class="icon" aria-hidden="true"><use href="#i-music" id="assetIconUse"/></svg></span>
+            <span class="asset-copy">
+              <strong id="assetTitle">原声已保留</strong>
+              <span id="assetSub">MP4 格式 · 已去除平台叠加水印</span>
+            </span>
+            <span class="asset-tag" id="assetTag">MP4</span>
+          </div>
+
+          <div class="actions">
+            <button class="btn-save" id="saveBtn" type="button">
+              <span class="save-progress" aria-hidden="true"></span>
+              <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+              <span class="btn-label">保存视频</span>
+            </button>
+            <button class="btn-ghost" id="copyBtn" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>复制原链接
+            </button>
+          </div>
+          <div class="result-note">
+            <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+            文件直接保存到本地，画质与原片一致
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how" aria-labelledby="howTitle">
+      <div class="section-head">
+        <span class="section-kicker">How it works</span>
+        <h2 id="howTitle">三步，带走干净的作品</h2>
+        <p>不用注册，不用安装。复制、粘贴、保存，剩下的交给憨憨。</p>
+      </div>
+      <div class="steps">
+        <article class="step-card">
+          <span class="step-index" aria-hidden="true">01</span>
+          <span class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-link"/></svg></span>
+          <h3>复制分享链接</h3>
+          <p>在抖音作品页点「分享」，选择「复制链接」，或直接复制整段分享口令。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-index" aria-hidden="true">02</span>
+          <span class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-spark"/></svg></span>
+          <h3>粘贴并提取</h3>
+          <p>回到这里点「粘贴」，再点「一键提取」。视频和图集会在一两秒内解析完成。</p>
+        </article>
+        <article class="step-card">
+          <span class="step-index" aria-hidden="true">03</span>
+          <span class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg></span>
+          <h3>保存到本地</h3>
+          <p>预览确认后点「保存视频」；图集可单张保存，也可以一键打包保存全部原图。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="faq" aria-labelledby="faqTitle">
+      <div class="section-head">
+        <span class="section-kicker">FAQ</span>
+        <h2 id="faqTitle">你可能想知道</h2>
+        <p>关于画质、图集、链接失效和隐私，这里一次说清楚。</p>
+      </div>
+      <div class="faq-wrap">
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>提取出来的视频真的没有水印吗？<span class="plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">本工具读取的是作品公开播放源中的干净版本，不叠加抖音 Logo、用户名或作品 ID 水印。最终画质取决于原作者上传的清晰度，最高常见为 1080P。</div>
+          </details>
+          <details class="faq-item">
+            <summary>支持图文 / 图集作品吗？<span class="plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">支持。粘贴图集链接后，会展示全部原图，可单张保存，也可以点「保存全部」自动打包成 ZIP 下载。图片同样不带有平台叠加水印。</div>
+          </details>
+          <details class="faq-item">
+            <summary>为什么偶尔会解析失败？<span class="plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">常见原因是作品已删除、设为私密、仅好友可见，或分享链接已过期。确认作品能正常打开后，换一条分享链接重试即可。</div>
+          </details>
+          <details class="faq-item">
+            <summary>需要登录抖音账号吗？会上传我的信息吗？<span class="plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">不需要登录，也不会读取你的抖音账号。网页只把你粘贴的公开链接发送给解析服务，用于本次提取；不保存历史记录，不收集头像、昵称或手机号。</div>
+          </details>
+          <details class="faq-item">
+            <summary>可以把作品用于商业用途吗？<span class="plus" aria-hidden="true"></span></summary>
+            <div class="faq-answer">不建议。无水印下载仅适合个人学习、收藏与备份。作品版权归原作者所有，二次发布、商用或去掉署名前，请先取得作者授权。</div>
+          </details>
+        </div>
+        <aside class="faq-aside">
+          <span class="aside-badge">GOOD TO KNOW</span>
+          <h3>保存前，先预览一遍。</h3>
+          <p>长视频文件可能较大，保存时请保持页面打开。图集打包会在本地完成，不会上传你的图片。</p>
+          <div class="aside-list">
+            <span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>视频、图集自动识别</span>
+            <span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>保留原声与原始比例</span>
+            <span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>图集一键打包 ZIP</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <a class="footer-brand" href="#top" aria-label="回到顶部">
+          <span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z" fill="#fff"/></svg></span>
+          <span><strong>憨憨去水印</strong><small>DOUYIN CLEAN</small></span>
+        </a>
+        <p class="footer-disclaimer"><b>免责声明：</b>本工具仅用于个人学习、收藏与备份，不鼓励任何侵犯版权的行为。请尊重原作者，未经授权请勿将作品用于商业用途或二次传播。解析结果来自公开链接，本站不存储任何作品文件。</p>
+      </div>
+      <div class="footer-meta">
+        <span>© 2026 憨憨去水印 · 本地工具，不联网保存你的记录</span>
+        <span><a href="#how">使用方法</a> &nbsp;·&nbsp; <a href="#faq">常见问题</a> &nbsp;·&nbsp; <a href="#top">回到顶部 ↑</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span id="toastText"></span>
+  </div>
+
+  <div class="lightbox" id="lightbox" hidden aria-modal="true" role="dialog" aria-label="图集预览">
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="关闭预览">
+      <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+    </button>
+    <button class="lightbox-nav prev" id="lightboxPrev" type="button" aria-label="上一张">
+      <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+    </button>
+    <img id="lightboxImg" alt="" referrerpolicy="no-referrer">
+    <button class="lightbox-nav next" id="lightboxNext" type="button" aria-label="下一张">
+      <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>
+    </button>
+    <div class="lightbox-bar">
+      <span id="lightboxCount">1 / 1</span>
+      <button type="button" id="lightboxSave"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>保存这张</button>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    'use strict';
+
+    const API_BASE = 'https://api.xingzhige.com/API/douyin/';
+    const REQUEST_TIMEOUT = 35000;
+    const LINK_HOSTS = /(^|\.)(douyin\.com|iesdouyin\.com)$/i;
+
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+    const els = {
+      body: document.body,
+      panel: $('#extractor'),
+      input: $('#urlInput'),
+      field: $('.field'),
+      pasteBtn: $('#pasteBtn'),
+      clearBtn: $('#clearBtn'),
+      extractBtn: $('#extractBtn'),
+      extractText: $('#extractText'),
+      errorBox: $('#errorBox'),
+      errorText: $('#errorText'),
+      result: $('#result'),
+      resultBody: $('#resultBody'),
+      typeBadge: $('#typeBadge'),
+      qualityBadge: $('#qualityBadge'),
+      watermarkBadge: $('#watermarkBadge'),
+      closeResult: $('#closeResult'),
+      videoStage: $('#videoStage'),
+      video: $('#videoPlayer'),
+      videoFallback: $('#videoFallback'),
+      gallery: $('#gallery'),
+      authorImg: $('#authorImg'),
+      authorInitial: $('#authorInitial'),
+      authorName: $('#authorName'),
+      workTitle: $('#workTitle'),
+      titleToggle: $('#titleToggle'),
+      stats: $('#stats'),
+      fileMeta: $('#fileMeta'),
+      assetTitle: $('#assetTitle'),
+      assetSub: $('#assetSub'),
+      assetTag: $('#assetTag'),
+      assetIconUse: $('#assetIconUse'),
+      saveBtn: $('#saveBtn'),
+      saveLabel: $('#saveBtn .btn-label'),
+      saveProgress: $('#saveBtn .save-progress'),
+      copyBtn: $('#copyBtn'),
+      toast: $('#toast'),
+      toastText: $('#toastText'),
+      lightbox: $('#lightbox'),
+      lightboxImg: $('#lightboxImg'),
+      lightboxCount: $('#lightboxCount'),
+      lightboxClose: $('#lightboxClose'),
+      lightboxPrev: $('#lightboxPrev'),
+      lightboxNext: $('#lightboxNext'),
+      lightboxSave: $('#lightboxSave')
+    };
+
+    let current = null;
+    let currentLink = '';
+    let isLoading = false;
+    let isSaving = false;
+    let toastTimer = 0;
+    let loadingTimer = 0;
+    let lightboxIndex = 0;
+    let lastFocused = null;
+
+    const loadingSteps = ['正在识别链接…', '正在解析作品…', '正在去除水印…', '正在整理文件…'];
+
+    function isHttpUrl(value) {
+      try {
+        const u = new URL(value);
+        return u.protocol === 'https:' || u.protocol === 'http:';
+      } catch { return false; }
+    }
+
+    function extractDouyinLink(text) {
+      const raw = String(text || '').trim();
+      if (!raw) return '';
+
+      const candidates = [];
+      const re = /https?:\/\/[^\s"'<>，。；！？、）】》]+/gi;
+      let match;
+      while ((match = re.exec(raw))) {
+        candidates.push(match[0].replace(/[),.;!?，。；！？、）】》]+$/g, ''));
+      }
+      if (!candidates.length) {
+        const bare = raw.match(/(?:https?:\/\/)?(?:www\.)?(?:douyin|iesdouyin)\.com\/[^\s"'<>，。；！？、）】》]+/i);
+        if (bare) candidates.push(bare[0]);
+      }
+      for (let c of candidates) {
+        if (!/^https?:\/\//i.test(c)) c = 'https://' + c;
+        try {
+          const u = new URL(c);
+          if (LINK_HOSTS.test(u.hostname)) {
+            const modalId = u.searchParams.get('modal_id');
+            if (modalId && /^\d{15,20}$/.test(modalId)) {
+              return `https://www.douyin.com/video/${modalId}`;
+            }
+            return u.toString();
+          }
+        } catch { /* keep looking */ }
+      }
+      return '';
+    }
+
+    function normalizeResponse(json) {
+      if (!json || json.code !== 0 || !json.data) {
+        const msg = json && json.msg ? String(json.msg) : '解析失败，请检查链接后重试';
+        throw new Error(msg);
+      }
+      const data = json.data;
+      const item = data.item || {};
+      const jx = data.jx || {};
+      const stat = data.stat || {};
+      const rawImages = Array.isArray(item.images) ? item.images : [];
+      const images = rawImages
+        .map(x => (typeof x === 'string' ? x : (x && (x.url || (x.url_list && x.url_list[0])))))
+        .filter(isHttpUrl);
+      const type = images.length || jx.type === '图集' ? 'images' : 'video';
+
+      if (type === 'video' && !isHttpUrl(item.url) && !isHttpUrl(item.ury)) {
+        throw new Error('没有找到可下载的视频地址，作品可能已删除');
+      }
+      if (type === 'images' && !images.length) {
+        throw new Error('没有找到图集图片，作品可能已删除');
+      }
+
+      const dimsList = Array.isArray(item.h_w)
+        ? item.h_w.map((value) => {
+            if (typeof value !== 'string') return null;
+            const pair = value.split('x').map(Number);
+            return pair.length === 2 && pair.every(Number.isFinite) ? pair : null;
+          })
+        : [];
+
+      return {
+        id: String(jx.item_id || stat.aweme_id || ''),
+        type,
+        title: String(item.title || '未命名作品').trim(),
+        author: {
+          name: String((data.author && data.author.name) || '抖音创作者').trim(),
+          avatar: data.author && isHttpUrl(data.author.avatar) ? data.author.avatar : '',
+          uid: String((data.author && (data.author.uid || data.author.short_id)) || '')
+        },
+        cover: isHttpUrl(item.cover) ? item.cover : '',
+        video: type === 'video' ? {
+          url: isHttpUrl(item.url) ? item.url : item.ury,
+          backup: isHttpUrl(item.ury) ? item.ury : '',
+          quality: item.quality ? String(item.quality) : '',
+          size: Number(item.size) || 0,
+          duration: Number(item.duration) || 0,
+          width: Number(item.width) || 0,
+          height: Number(item.height) || 0
+        } : null,
+        images: images.map((url, index) => ({
+          url,
+          width: dimsList[index] ? dimsList[index][0] : 0,
+          height: dimsList[index] ? dimsList[index][1] : 0,
+          index
+        })),
+        music: isHttpUrl(item.muisic) ? item.muisic : (isHttpUrl(item.music) ? item.music : ''),
+        stats: {
+          like: Number(stat.like) || 0,
+          comment: Number(stat.comment) || 0,
+          collect: Number(stat.collect) || 0,
+          share: Number(stat.share) || 0
+        }
+      };
+    }
+
+    function formatCount(n) {
+      const num = Number(n) || 0;
+      if (num >= 100000000) return (num / 100000000).toFixed(num % 100000000 === 0 ? 0 : 1).replace(/\.0$/, '') + '亿';
+      if (num >= 10000) return (num / 10000).toFixed(num % 10000 === 0 ? 0 : 1).replace(/\.0$/, '') + '万';
+      return String(num);
+    }
+
+    function formatBytes(bytes) {
+      const n = Number(bytes) || 0;
+      if (!n) return '';
+      if (n >= 1024 * 1024 * 1024) return (n / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+      if (n >= 1024 * 1024) return (n / 1024 / 1024).toFixed(1) + ' MB';
+      return (n / 1024).toFixed(0) + ' KB';
+    }
+
+    function formatDuration(seconds) {
+      const total = Math.max(0, Math.round(Number(seconds) || 0));
+      if (!total) return '';
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      return h
+        ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+        : `${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    function pad2(n) { return String(n).padStart(2, '0'); }
+
+    function sanitizeFilename(value, fallback = 'douyin') {
+      const cleaned = String(value || '')
+        .replace(/[\\/:*?"<>|\r\n\t]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .replace(/^\.+|\.+$/g, '')
+        .trim()
+        .slice(0, 64);
+      return cleaned || fallback;
+    }
+
+    function baseFilename(data) {
+      const author = sanitizeFilename(data.author.name, 'douyin');
+      const title = sanitizeFilename(data.title, 'video');
+      return sanitizeFilename(`${author}_${title}`, 'douyin');
+    }
+
+    function imageExtension(url, index) {
+      try {
+        const path = new URL(url).pathname.toLowerCase();
+        if (/\.png$/.test(path)) return 'png';
+        if (/\.webp$/.test(path)) return 'webp';
+        if (/\.gif$/.test(path)) return 'gif';
+        if (/\.avif$/.test(path)) return 'avif';
+      } catch { /* default */ }
+      return 'jpg';
+    }
+
+    function toast(message, ok = true) {
+      clearTimeout(toastTimer);
+      els.toastText.textContent = message;
+      els.toast.classList.toggle('is-error', !ok);
+      els.toast.querySelector('use').setAttribute('href', ok ? '#i-check' : '#i-alert');
+      els.toast.classList.add('show');
+      toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600);
+    }
+
+    function showError(message) {
+      els.errorText.textContent = message;
+      els.errorBox.hidden = false;
+      els.field.classList.remove('has-error');
+      void els.field.offsetWidth;
+      els.field.classList.add('has-error');
+    }
+
+    function clearError() {
+      els.errorBox.hidden = true;
+      els.errorText.textContent = '';
+      els.field.classList.remove('has-error');
+    }
+
+    function setLoading(loading) {
+      isLoading = loading;
+      els.extractBtn.disabled = loading;
+      els.extractBtn.classList.toggle('is-loading', loading);
+      els.extractBtn.setAttribute('aria-busy', loading ? 'true' : 'false');
+      els.panel.classList.toggle('is-loading', loading);
+      els.input.disabled = loading;
+      els.pasteBtn.disabled = loading;
+      els.clearBtn.disabled = loading;
+      clearInterval(loadingTimer);
+      if (loading) {
+        let step = 0;
+        els.extractText.textContent = loadingSteps[0];
+        loadingTimer = setInterval(() => {
+          step = Math.min(step + 1, loadingSteps.length - 1);
+          els.extractText.textContent = loadingSteps[step];
+        }, 900);
+      }
+    }
+
+    function resetInputHeight() {
+      els.input.style.height = 'auto';
+      els.input.style.height = Math.min(160, Math.max(78, els.input.scrollHeight)) + 'px';
+    }
+
+    async function parseLink() {
+      if (isLoading) return;
+      clearError();
+      const raw = els.input.value.trim();
+      if (!raw) {
+        showError('请先粘贴抖音作品链接');
+        els.input.focus();
+        return;
+      }
+      const link = extractDouyinLink(raw);
+      if (!link) {
+        showError('没有识别到抖音链接，请粘贴完整的分享链接或分享口令');
+        els.input.focus();
+        return;
+      }
+
+      els.input.value = link;
+      resetInputHeight();
+      setLoading(true);
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+      try {
+        const response = await fetch(`${API_BASE}?url=${encodeURIComponent(link)}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal,
+          credentials: 'omit',
+          referrerPolicy: 'no-referrer',
+          cache: 'no-store'
+        });
+        if (!response.ok) throw new Error(`解析服务暂时不可用（HTTP ${response.status}）`);
+        const json = await response.json();
+        const data = normalizeResponse(json);
+        current = data;
+        currentLink = link;
+        renderResult(data);
+        toast(data.type === 'images' ? `已提取 ${data.images.length} 张原图` : '视频提取成功');
+      } catch (error) {
+        const aborted = error && error.name === 'AbortError';
+        const message = aborted
+          ? '解析超时了，请稍后重试'
+          : (error && error.message ? error.message : '解析失败，请稍后重试');
+        showError(message);
+        toast(message, false);
+      } finally {
+        clearTimeout(timer);
+        setLoading(false);
+      }
+    }
+
+    function renderResult(data) {
+      els.result.hidden = false;
+      els.resultBody.classList.toggle('is-images', data.type === 'images');
+      els.resultBody.classList.toggle('is-multi-images', data.type === 'images' && data.images.length > 1);
+      els.typeBadge.textContent = data.type === 'images' ? '图集' : '视频';
+      els.watermarkBadge.textContent = '已去水印';
+
+      const quality = data.video && data.video.quality
+        ? String(data.video.quality).toUpperCase()
+        : (data.type === 'images' ? '原图' : '高清');
+      els.qualityBadge.textContent = quality;
+
+      if (data.type === 'images') {
+        els.assetTitle.textContent = '原图直出';
+        els.assetSub.textContent = '无平台叠加水印，可单张保存或打包下载';
+        els.assetTag.textContent = data.images.length + ' 张';
+        els.assetIconUse.setAttribute('href', '#i-image');
+      } else {
+        els.assetTitle.textContent = '原声已保留';
+        els.assetSub.textContent = 'MP4 格式 · 已去除平台叠加水印';
+        els.assetTag.textContent = 'MP4';
+        els.assetIconUse.setAttribute('href', '#i-music');
+      }
+
+      els.authorName.textContent = data.author.name || '抖音创作者';
+      els.authorInitial.textContent = (data.author.name || '抖').slice(0, 1);
+      els.authorImg.classList.remove('is-hidden');
+      els.authorImg.onerror = () => els.authorImg.classList.add('is-hidden');
+      if (data.author.avatar) {
+        els.authorImg.src = data.author.avatar;
+        els.authorImg.alt = data.author.name;
+      } else {
+        els.authorImg.removeAttribute('src');
+        els.authorImg.classList.add('is-hidden');
+      }
+
+      els.workTitle.textContent = data.title || '未命名作品';
+      els.workTitle.classList.remove('is-expanded');
+      els.titleToggle.hidden = (data.title || '').length < 42;
+      els.titleToggle.textContent = '展开全文';
+
+      renderStats(data.stats);
+      renderFileMeta(data);
+      renderMedia(data);
+
+      els.saveBtn.disabled = false;
+      els.saveBtn.style.setProperty('--p', '0%');
+      els.saveLabel.textContent = data.type === 'images'
+        ? (data.images.length === 1 ? '保存原图' : `保存全部 ${data.images.length} 张`)
+        : '保存视频';
+      els.copyBtn.disabled = false;
+
+      requestAnimationFrame(() => {
+        const top = els.result.offsetTop - 18;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      });
+    }
+
+    function renderStats(stats) {
+      const items = [
+        ['heart', '点赞', stats.like],
+        ['comment', '评论', stats.comment],
+        ['bookmark', '收藏', stats.collect],
+        ['share', '分享', stats.share]
+      ];
+      els.stats.replaceChildren(...items.map(([icon, label, value]) => {
+        const div = document.createElement('div');
+        div.className = 'stat';
+        div.innerHTML = `<span class="stat-top"><svg class="icon" aria-hidden="true"><use href="#i-${icon}"/></svg>${label}</span><span class="stat-value">${formatCount(value)}</span>`;
+        return div;
+      }));
+    }
+
+    function renderFileMeta(data) {
+      const parts = [];
+      if (data.type === 'video') {
+        if (data.video.quality) parts.push(String(data.video.quality).toUpperCase());
+        if (data.video.size) parts.push(formatBytes(data.video.size));
+        if (data.video.duration) parts.push(formatDuration(data.video.duration));
+        if (data.video.width && data.video.height) parts.push(`${data.video.width}×${data.video.height}`);
+      } else {
+        parts.push(`共 ${data.images.length} 张原图`);
+        if (data.images.length === 1 && data.images[0].width) {
+          parts.push(`${data.images[0].width}×${data.images[0].height}`);
+        }
+      }
+      if (!parts.length) parts.push('公开作品');
+      els.fileMeta.replaceChildren(...parts.map((text, i) => {
+        const span = document.createElement('span');
+        span.textContent = text;
+        return span;
+      }));    }
+
+    function renderMedia(data) {
+      els.video.pause();
+      els.video.removeAttribute('src');
+      els.video.removeAttribute('poster');
+      els.video.load();
+      els.video.classList.remove('is-hidden');
+      els.videoStage.classList.remove('is-landscape');
+      els.videoFallback.hidden = true;
+      els.gallery.replaceChildren();
+      els.videoStage.hidden = data.type === 'images';
+      els.gallery.hidden = data.type !== 'images';
+
+      if (data.type === 'video') {
+        if (data.video.width > data.video.height * 1.1) {
+          els.videoStage.classList.add('is-landscape');
+        }
+        if (data.cover) els.video.poster = data.cover;
+        els.video.src = data.video.url;
+        let triedBackup = false;
+        els.video.onerror = () => {
+          if (!triedBackup && data.video.backup) {
+            triedBackup = true;
+            els.video.src = data.video.backup;
+            els.video.load();
+            return;
+          }
+          els.video.classList.add('is-hidden');
+          els.videoFallback.hidden = false;
+        };
+        els.video.onloadeddata = () => {
+          els.video.classList.remove('is-hidden');
+          els.videoFallback.hidden = true;
+        };
+        return;
+      }
+
+      renderGallery(data.images);
+    }
+
+    function renderGallery(images) {
+      els.gallery.classList.toggle('count-1', images.length === 1);
+      els.gallery.classList.toggle('count-2', images.length === 2);
+      els.gallery.replaceChildren(...images.map((image, index) => {
+        const figure = document.createElement('figure');
+        figure.className = 'shot';
+        const img = document.createElement('img');
+        img.src = image.url;
+        img.alt = `图集第 ${index + 1} 张`;
+        img.loading = 'lazy';
+        img.referrerPolicy = 'no-referrer';
+        const open = document.createElement('button');
+        open.type = 'button';
+        open.className = 'shot-open';
+        open.setAttribute('aria-label', `预览第 ${index + 1} 张`);
+        open.addEventListener('click', () => openLightbox(index));
+        const idx = document.createElement('span');
+        idx.className = 'shot-index';
+        idx.textContent = pad2(index + 1);
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.className = 'shot-save';
+        save.setAttribute('aria-label', `保存第 ${index + 1} 张`);
+        save.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>';
+        save.addEventListener('click', (event) => {
+          event.stopPropagation();
+          saveSingleImage(index, save);
+        });
+        open.appendChild(idx);
+        figure.append(img, open, save);
+        return figure;
+      }));
+    }
+
+    function openLightbox(index) {
+      if (!current || current.type !== 'images' || !current.images.length) return;
+      lightboxIndex = (index + current.images.length) % current.images.length;
+      const image = current.images[lightboxIndex];
+      lastFocused = document.activeElement;
+      els.lightboxImg.src = image.url;
+      els.lightboxImg.alt = `图集第 ${lightboxIndex + 1} 张`;
+      els.lightboxCount.textContent = `${lightboxIndex + 1} / ${current.images.length}`;
+      els.lightbox.hidden = false;
+      els.body.classList.add('no-scroll');
+      els.lightboxClose.focus();
+    }
+
+    function closeLightbox() {
+      els.lightbox.hidden = true;
+      els.body.classList.remove('no-scroll');
+      els.lightboxImg.removeAttribute('src');
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    }
+
+    function moveLightbox(dir) {
+      if (!current || current.type !== 'images') return;
+      openLightbox(lightboxIndex + dir);
+    }
+
+    function makeWritableTypes(filename) {
+      const ext = '.' + (filename.split('.').pop() || 'bin').toLowerCase();
+      const map = {
+        '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+        '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif',
+        '.zip': 'application/zip', '.mp3': 'audio/mpeg'
+      };
+      const mime = map[ext] || 'application/octet-stream';
+      return [{ description: '媒体文件', accept: { [mime]: [ext] } }];
+    }
+
+    async function saveUrl(url, filename, onProgress, options = {}) {
+      const allowPicker = options.allowPicker !== false;
+      let writable = null;
+      let handle = null;
+
+      if (allowPicker && typeof window.showSaveFilePicker === 'function') {
+        try {
+          handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: makeWritableTypes(filename)
+          });
+          writable = await handle.createWritable();
+        } catch (error) {
+          if (error && error.name === 'AbortError') throw error;
+          writable = null;
+        }
+      }
+
+      const response = await fetch(url, { credentials: 'omit', mode: 'cors', referrerPolicy: 'no-referrer' });
+      if (!response.ok) {
+        if (writable) {
+          try { await writable.abort(); } catch { /* ignore */ }
+        }
+        throw new Error(`下载失败（HTTP ${response.status}）`);
+      }
+      if (writable && (!response.body || typeof response.body.getReader !== 'function')) {
+        try { await writable.abort(); } catch { /* ignore */ }
+        writable = null;
+      }
+
+      if (writable && response.body && typeof response.body.getReader === 'function') {
+        const total = Number(response.headers.get('content-length')) || 0;
+        let received = 0;
+        const reader = response.body.getReader();
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            await writable.write(value);
+            received += value.length;
+            if (total && onProgress) onProgress(Math.min(1, received / total));
+          }
+          await writable.close();
+          return 'stream';
+        } catch (error) {
+          try { await writable.abort(); } catch { /* ignore */ }
+          throw error;
+        }
+      }
+
+      const blob = await response.blob();
+      if (onProgress) onProgress(1);
+      downloadBlob(blob, filename);
+      return 'blob';
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+    function setSaveProgress(ratio) {
+      const pct = Math.max(0, Math.min(100, Math.round((Number(ratio) || 0) * 100)));
+      els.saveBtn.style.setProperty('--p', pct + '%');
+      if (isSaving) els.saveLabel.textContent = pct > 0 ? `保存中 ${pct}%` : '准备保存…';
+    }
+
+    function resetSaveButton() {
+      isSaving = false;
+      els.saveBtn.disabled = false;
+      els.saveBtn.style.setProperty('--p', '0%');
+      if (current) {
+        els.saveLabel.textContent = current.type === 'images'
+          ? (current.images.length === 1 ? '保存原图' : `保存全部 ${current.images.length} 张`)
+          : '保存视频';
+      } else {
+        els.saveLabel.textContent = '保存视频';
+      }
+    }
+
+    async function saveVideo() {
+      if (!current || current.type !== 'video' || isSaving) return;
+      isSaving = true;
+      els.saveBtn.disabled = true;
+      els.saveLabel.textContent = '准备保存…';
+      els.saveBtn.style.setProperty('--p', '0%');
+      const filename = `${baseFilename(current)}.mp4`;
+      try {
+        await saveUrl(current.video.url, filename, setSaveProgress);
+        toast('视频已保存');
+      } catch (error) {
+        if (error && error.name === 'AbortError') {
+          toast('已取消保存');
+        } else if (current.video.backup) {
+          try {
+            els.saveLabel.textContent = '切换线路…';
+            await saveUrl(current.video.backup, filename, setSaveProgress, { allowPicker: false });
+            toast('已通过备用线路保存');
+          } catch (backupError) {
+            if (backupError && backupError.name === 'AbortError') toast('已取消保存');
+            else toast('保存失败，请检查网络后重试', false);
+          }
+        } else {
+          toast('保存失败，请检查网络后重试', false);
+        }
+      } finally {
+        resetSaveButton();
+      }
+    }
+
+    async function saveSingleImage(index, button) {
+      if (!current || current.type !== 'images') return;
+      const image = current.images[index];
+      if (!image) return;
+      button.classList.add('is-loading');
+      button.disabled = true;
+      try {
+        const response = await fetch(image.url, { credentials: 'omit', mode: 'cors', referrerPolicy: 'no-referrer' });
+        if (!response.ok) throw new Error('下载失败');
+        const blob = await response.blob();
+        downloadBlob(blob, `${baseFilename(current)}_${pad2(index + 1)}.${imageExtension(image.url, index)}`);
+        toast(`第 ${index + 1} 张已保存`);
+      } catch {
+        toast('图片保存失败，请重试', false);
+      } finally {
+        button.classList.remove('is-loading');
+        button.disabled = false;
+      }
+    }
+
+    async function mapLimit(items, limit, worker) {
+      const results = new Array(items.length);
+      let next = 0;
+      const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (true) {
+          const index = next++;
+          if (index >= items.length) return;
+          results[index] = await worker(items[index], index);
+        }
+      });
+      await Promise.all(runners);
+      return results;
+    }
+
+    async function saveSingleImageAsFile() {
+      if (!current || current.type !== 'images' || !current.images.length || isSaving) return;
+      const image = current.images[0];
+      isSaving = true;
+      els.saveBtn.disabled = true;
+      els.saveLabel.textContent = '准备保存…';
+      els.saveBtn.style.setProperty('--p', '0%');
+      try {
+        await saveUrl(
+          image.url,
+          `${baseFilename(current)}_01.${imageExtension(image.url, 0)}`,
+          setSaveProgress
+        );
+        toast('原图已保存');
+      } catch (error) {
+        if (error && error.name === 'AbortError') toast('已取消保存');
+        else toast('图片保存失败，请重试', false);
+      } finally {
+        resetSaveButton();
+      }
+    }
+
+    async function saveAllImages() {
+      if (!current || current.type !== 'images' || isSaving) return;
+      const total = current.images.length;
+      isSaving = true;
+      els.saveBtn.disabled = true;
+      els.saveBtn.style.setProperty('--p', '0%');
+      els.saveLabel.textContent = '准备打包…';
+      const files = new Array(total);
+      let done = 0;
+      let failed = 0;
+
+      try {
+        await mapLimit(current.images, 4, async (image, index) => {
+          try {
+            const response = await fetch(image.url, { credentials: 'omit', mode: 'cors', referrerPolicy: 'no-referrer' });
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            const buffer = new Uint8Array(await response.arrayBuffer());
+            files[index] = {
+              name: `${pad2(index + 1)}.${imageExtension(image.url, index)}`,
+              data: buffer
+            };
+          } catch {
+            failed += 1;
+          } finally {
+            done += 1;
+            setSaveProgress(done / total * 0.86);
+          }
+        });
+
+        const valid = files.filter(Boolean);
+        if (!valid.length) throw new Error('没有成功下载图片');
+        setSaveProgress(0.92);
+        els.saveLabel.textContent = '正在打包…';
+        const zip = makeZip(valid);
+        downloadBlob(zip, `${baseFilename(current)}_图集.zip`);
+        toast(failed ? `已打包 ${valid.length} 张，${failed} 张失败` : `已打包保存 ${valid.length} 张原图`, failed === 0);
+      } catch (error) {
+        toast(error && error.message ? error.message : '图集保存失败，请重试', false);
+      } finally {
+        resetSaveButton();
+      }
+    }
+
+    function crc32(data) {
+      if (!crc32.table) {
+        const table = new Uint32Array(256);
+        for (let i = 0; i < 256; i++) {
+          let c = i;
+          for (let j = 0; j < 8; j++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+          table[i] = c >>> 0;
+        }
+        crc32.table = table;
+      }
+      let crc = 0xffffffff;
+      for (let i = 0; i < data.length; i++) {
+        crc = crc32.table[(crc ^ data[i]) & 0xff] ^ (crc >>> 8);
+      }
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function dosDateTime(date = new Date()) {
+      const year = Math.max(1980, date.getFullYear());
+      const time = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+      const day = ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+      return { time, day };
+    }
+
+    function makeZip(files) {
+      const encoder = new TextEncoder();
+      const chunks = [];
+      const central = [];
+      const { time, day } = dosDateTime();
+      let offset = 0;
+
+      files.forEach((file) => {
+        const nameBytes = encoder.encode(file.name);
+        const data = file.data;
+        const crc = crc32(data);
+        const local = new Uint8Array(30 + nameBytes.length);
+        const lv = new DataView(local.buffer);
+        lv.setUint32(0, 0x04034b50, true);
+        lv.setUint16(4, 20, true);
+        lv.setUint16(6, 0x0800, true);
+        lv.setUint16(8, 0, true);
+        lv.setUint16(10, time, true);
+        lv.setUint16(12, day, true);
+        lv.setUint32(14, crc, true);
+        lv.setUint32(18, data.length, true);
+        lv.setUint32(22, data.length, true);
+        lv.setUint16(26, nameBytes.length, true);
+        lv.setUint16(28, 0, true);
+        local.set(nameBytes, 30);
+        chunks.push(local, data);
+
+        const centralHeader = new Uint8Array(46 + nameBytes.length);
+        const cv = new DataView(centralHeader.buffer);
+        cv.setUint32(0, 0x02014b50, true);
+        cv.setUint16(4, 20, true);
+        cv.setUint16(6, 20, true);
+        cv.setUint16(8, 0x0800, true);
+        cv.setUint16(10, 0, true);
+        cv.setUint16(12, time, true);
+        cv.setUint16(14, day, true);
+        cv.setUint32(16, crc, true);
+        cv.setUint32(20, data.length, true);
+        cv.setUint32(24, data.length, true);
+        cv.setUint16(28, nameBytes.length, true);
+        cv.setUint16(30, 0, true);
+        cv.setUint16(32, 0, true);
+        cv.setUint16(34, 0, true);
+        cv.setUint16(36, 0, true);
+        cv.setUint32(38, 0, true);
+        cv.setUint32(42, offset, true);
+        centralHeader.set(nameBytes, 46);
+        central.push(centralHeader);
+
+        offset += local.length + data.length;
+      });
+
+      const centralSize = central.reduce((sum, item) => sum + item.length, 0);
+      const end = new Uint8Array(22);
+      const ev = new DataView(end.buffer);
+      ev.setUint32(0, 0x06054b50, true);
+      ev.setUint16(4, 0, true);
+      ev.setUint16(6, 0, true);
+      ev.setUint16(8, files.length, true);
+      ev.setUint16(10, files.length, true);
+      ev.setUint32(12, centralSize, true);
+      ev.setUint32(16, offset, true);
+      ev.setUint16(20, 0, true);
+
+      return new Blob([...chunks, ...central, end], { type: 'application/zip' });
+    }
+
+    async function saveCurrent() {
+      if (!current) return;
+      if (current.type === 'images') {
+        if (current.images.length === 1) await saveSingleImageAsFile();
+        else await saveAllImages();
+      } else {
+        await saveVideo();
+      }
+    }
+
+    async function copyOriginalLink() {
+      if (!currentLink) return;
+      try {
+        await navigator.clipboard.writeText(currentLink);
+        toast('原链接已复制');
+      } catch {
+        const area = document.createElement('textarea');
+        area.value = currentLink;
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        try {
+          document.execCommand('copy');
+          toast('原链接已复制');
+        } catch {
+          toast('复制失败，请手动选择链接', false);
+        }
+        area.remove();
+      }
+    }
+
+    async function pasteFromClipboard() {
+      if (isLoading) return;
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.readText) throw new Error('unsupported');
+        const text = await navigator.clipboard.readText();
+        if (!text || !text.trim()) {
+          toast('剪贴板是空的', false);
+          els.input.focus();
+          return;
+        }
+        els.input.value = text.trim();
+        resetInputHeight();
+        clearError();
+        els.input.focus();
+        toast('已粘贴');
+      } catch {
+        els.input.focus();
+        toast('无法读取剪贴板，请按 Ctrl + V 手动粘贴', false);
+      }
+    }
+
+    function clearAll() {
+      if (isLoading) return;
+      if (isSaving) {
+        toast('正在保存，请稍候', false);
+        return;
+      }
+      els.input.value = '';
+      resetInputHeight();
+      clearError();
+      closeResultPanel(true);
+      els.input.focus();
+      toast('已清除');
+    }
+
+    function closeResultPanel(force = false) {
+      if (isSaving && !force) {
+        toast('正在保存，请稍候', false);
+        return;
+      }
+      els.result.hidden = true;
+      els.video.pause();
+      els.video.removeAttribute('src');
+      els.video.load();
+      els.gallery.replaceChildren();
+      current = null;
+      currentLink = '';
+      isSaving = false;
+    }
+
+    function bindEvents() {
+      els.extractBtn.addEventListener('click', parseLink);
+      els.pasteBtn.addEventListener('click', pasteFromClipboard);
+      els.clearBtn.addEventListener('click', clearAll);
+      els.saveBtn.addEventListener('click', saveCurrent);
+      els.copyBtn.addEventListener('click', copyOriginalLink);
+      els.closeResult.addEventListener('click', () => closeResultPanel());
+
+      els.input.addEventListener('input', () => {
+        resetInputHeight();
+        if (!els.errorBox.hidden) clearError();
+      });
+      els.input.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+          event.preventDefault();
+          parseLink();
+        }
+      });
+
+      els.titleToggle.addEventListener('click', () => {
+        const expanded = els.workTitle.classList.toggle('is-expanded');
+        els.titleToggle.textContent = expanded ? '收起' : '展开全文';
+      });
+
+      els.lightboxClose.addEventListener('click', closeLightbox);
+      els.lightboxPrev.addEventListener('click', () => moveLightbox(-1));
+      els.lightboxNext.addEventListener('click', () => moveLightbox(1));
+      els.lightboxSave.addEventListener('click', () => {
+        if (!current) return;
+        const button = els.lightboxSave;
+        saveSingleImage(lightboxIndex, button);
+      });
+      els.lightbox.addEventListener('click', (event) => {
+        if (event.target === els.lightbox) closeLightbox();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (els.lightbox.hidden) return;
+        if (event.key === 'Escape') closeLightbox();
+        if (event.key === 'ArrowLeft') moveLightbox(-1);
+        if (event.key === 'ArrowRight') moveLightbox(1);
+      });
+    }
+
+    bindEvents();
+    resetInputHeight();
+  })();
+  </script>
+</body>
+</html>
