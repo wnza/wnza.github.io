@@ -635,6 +635,8 @@
       max-height: 590px;
       border-radius: 21px;
       overflow: hidden;
+      isolation: isolate;
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
       background:
         radial-gradient(100% 80% at 50% 0%, rgba(36,87,245,.12), transparent 60%),
         #080d18;
@@ -642,14 +644,19 @@
     }
     .video-stage.is-landscape { aspect-ratio: 16 / 9; max-height: none; }
     .video-stage video {
+      position: absolute;
+      inset: 0;
       width: 100%; height: 100%;
+      max-width: 100%; max-height: 100%;
       object-fit: contain;
+      border-radius: inherit;
       background: #080d18;
+      transform: translateZ(0);
     }
     .video-stage video.is-hidden { display: none; }
     .preview-label {
       position: absolute; left: 12px; top: 12px;
-      z-index: 2;
+      z-index: 3;
       height: 23px; padding: 0 8px;
       display: inline-flex; align-items: center;
       border-radius: 6px;
@@ -662,6 +669,7 @@
     }
     .video-fallback {
       position: absolute; inset: 0;
+      z-index: 2;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
       padding: 24px;
       color: rgba(255,255,255,.7);
@@ -1522,6 +1530,9 @@
     const API_BASE = 'https://api.xingzhige.com/API/douyin/';
     const REQUEST_TIMEOUT = 35000;
     const LINK_HOSTS = /(^|\.)(douyin\.com|iesdouyin\.com)$/i;
+    const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const IS_MOBILE = IS_IOS || /Android|Mobile|HarmonyOS/i.test(navigator.userAgent);
 
     const $ = (sel, root = document) => root.querySelector(sel);
     const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -2043,7 +2054,7 @@
     }
 
     async function saveUrl(url, filename, onProgress, options = {}) {
-      const allowPicker = options.allowPicker !== false;
+      const allowPicker = options.allowPicker !== false && !IS_MOBILE;
       let writable = null;
       let handle = null;
 
@@ -2092,10 +2103,32 @@
         }
       }
 
-      const blob = await response.blob();
-      if (onProgress) onProgress(1);
+      const blob = await readBlobWithProgress(response, onProgress);
       downloadBlob(blob, filename);
       return 'blob';
+    }
+
+    async function readBlobWithProgress(response, onProgress) {
+      const total = Number(response.headers.get('content-length')) || 0;
+      if (!response.body || typeof response.body.getReader !== 'function') {
+        const blob = await response.blob();
+        if (onProgress) onProgress(1);
+        return blob;
+      }
+      const reader = response.body.getReader();
+      const chunks = [];
+      let received = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.length;
+        if (onProgress) onProgress(total ? Math.min(0.99, received / total) : 0);
+      }
+      if (onProgress) onProgress(1);
+      return new Blob(chunks, {
+        type: response.headers.get('content-type') || 'application/octet-stream'
+      });
     }
 
     function downloadBlob(blob, filename) {
