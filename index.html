@@ -328,6 +328,114 @@
     }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+    /* ---------- auth ---------- */
+    .auth-btn .auth-avatar {
+      display: none; width: 20px; height: 20px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--active);
+      color: var(--active-ink);
+      font-family: var(--mono); font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+    }
+    .auth-btn.is-in .auth-avatar { display: grid; }
+    .auth-btn.is-in .auth-icon { display: none; }
+    .auth-btn .auth-label { max-width: 104px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .auth {
+      width: min(426px, calc(100vw - 28px));
+      padding: 0;
+      border: 1px solid var(--line-2);
+      border-radius: 14px;
+      background: var(--card);
+      color: var(--ink);
+      box-shadow: 0 30px 70px -32px rgba(0, 0, 0, .45);
+    }
+    .auth::backdrop { background: rgba(20, 20, 18, .34); backdrop-filter: blur(3px); }
+    .auth[open] { animation: authIn .18s ease both; }
+    @keyframes authIn { from { opacity: 0; transform: translateY(7px) scale(.99); } to { opacity: 1; transform: none; } }
+    .auth-card { padding: 17px 20px 19px; }
+    .auth-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .auth-top strong { display: block; font-size: 14px; font-weight: 650; letter-spacing: .02em; }
+    .auth-top small { display: block; margin-top: 6px; font-family: var(--mono); font-size: 7.5px; letter-spacing: .18em; color: var(--muted-2); }
+    .auth-view { padding-top: 16px; }
+    .auth-form { display: flex; flex-direction: column; gap: 11px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field > span {
+      font-family: var(--mono); font-size: 8.5px; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--muted-2);
+    }
+    .field input {
+      height: 40px; padding: 0 11px;
+      border: 1px solid var(--line-2);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 13px;
+      outline: 0;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+    .field input::placeholder { color: var(--muted-2); }
+    .field input:focus { border-color: var(--ink-2); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 6%, transparent); }
+    .auth-submit {
+      height: 40px; margin-top: 3px;
+      border: 0; border-radius: 8px;
+      background: var(--active);
+      color: var(--active-ink);
+      font-size: 12.5px; font-weight: 600; letter-spacing: .02em;
+      cursor: pointer;
+      transition: opacity .18s, transform .18s;
+    }
+    .auth-submit:hover { opacity: .9; }
+    .auth-submit:active { transform: translateY(1px); }
+    .auth-submit:disabled { opacity: .55; cursor: default; transform: none; }
+    .auth-submit.ghost { background: transparent; border: 1px solid var(--line-2); color: var(--ink); }
+    .auth-submit.ghost:hover { background: var(--soft); opacity: 1; }
+    .auth-links {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 13px;
+      color: var(--muted-2); font-size: 10.5px;
+    }
+    .auth-links button { padding: 0; border: 0; background: none; color: var(--muted); font-size: 10.5px; cursor: pointer; }
+    .auth-links button:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .auth-note { margin: 12px 0 0; color: var(--muted-2); font-size: 10px; line-height: 1.75; }
+    .auth-note code { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+    .auth-alert {
+      margin-top: 14px; padding: 9px 11px;
+      border: 1px solid var(--line-2);
+      border-radius: 8px;
+      background: var(--soft);
+      color: var(--ink-2);
+      font-size: 10.5px; line-height: 1.6;
+    }
+    .auth-alert.ok {
+      border-color: color-mix(in srgb, #2f8f5b 42%, var(--line-2));
+      background: color-mix(in srgb, #2f8f5b 8%, var(--card));
+      color: #2f7d51;
+    }
+    html[data-theme="dark"] .auth-alert.ok { color: #86d9aa; }
+    .auth-alert.err {
+      border-color: color-mix(in srgb, #c0392b 42%, var(--line-2));
+      background: color-mix(in srgb, #c0392b 7%, var(--card));
+      color: #b33526;
+    }
+    html[data-theme="dark"] .auth-alert.err { color: #ff9d90; }
+    .auth-id { display: flex; align-items: center; gap: 12px; padding: 2px 0 14px; border-bottom: 1px solid var(--line); }
+    .auth-id .avatar {
+      width: 40px; height: 40px; flex: none;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      background: var(--active);
+      color: var(--active-ink);
+      font-family: var(--mono); font-size: 15px; font-weight: 700; text-transform: uppercase;
+    }
+    .auth-id strong { display: block; font-size: 13px; font-weight: 600; word-break: break-all; }
+    .auth-id small { display: block; margin-top: 4px; color: var(--muted-2); font-size: 9.5px; }
+    .auth-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 14px 0 0; }
+    .auth-meta div { padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+    .auth-meta dt { margin: 0; color: var(--muted-2); font-family: var(--mono); font-size: 7.5px; letter-spacing: .1em; text-transform: uppercase; }
+    .auth-meta dd { margin: 5px 0 0; font-size: 10.5px; color: var(--ink-2); }
+    .auth-actions { display: grid; gap: 8px; margin-top: 16px; }
+
     @media (max-width: 960px) {
       :root { --sidebar: 0px; }
       .app { display: block; }
@@ -351,6 +459,8 @@
       .side-nav {
         flex-direction: row;
         gap: 2px;
+        flex: 1 1 auto;
+        min-width: 0;
         overflow-x: auto;
         scrollbar-width: none;
         padding-left: 3px;
@@ -381,7 +491,13 @@
       .site { min-height: 76px; }
       .site-arrow { opacity: 1; transform: none; }
       .head-meta .count { display: none; }
+      .auth-btn .auth-label { max-width: 66px; }
       .footer { flex-direction: column; align-items: flex-start; gap: 7px; }
+    }
+    @media (max-width: 540px) {
+      .auth { width: calc(100vw - 20px); }
+      .auth-card { padding: 15px 16px 17px; }
+      .auth-meta { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
@@ -403,6 +519,9 @@
     <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15.3A8.5 8.5 0 0 1 8.7 4a8.5 8.5 0 1 0 11.3 11.3Z"/></symbol>
     <symbol id="i-empty" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8.5 11h5"/></symbol>
     <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="3.6"/><path d="M11.6 12H20M17 12v3M14.6 12v2.4"/></symbol>
   </svg>
 
   <div class="app">
@@ -432,6 +551,11 @@
             <span class="count" id="resultCount">0 个站点</span>
             <button class="icon-btn" id="randomBtn" type="button" title="随机打开一个站点">
               <svg class="icon" aria-hidden="true"><use href="#i-random"/></svg>随机
+            </button>
+            <button class="icon-btn auth-btn" id="authBtn" type="button" title="登录 / 注册账号">
+              <span class="auth-avatar" id="authAvatar" aria-hidden="true"></span>
+              <svg class="icon auth-icon" aria-hidden="true"><use href="#i-user"/></svg>
+              <span class="auth-label" id="authLabel">登录</span>
             </button>
             <button class="icon-btn round-btn theme-toggle" id="themeToggle" type="button" aria-label="切换深色主题" title="切换明暗主题">
               <svg class="icon sun" aria-hidden="true"><use href="#i-sun"/></svg>
@@ -467,6 +591,124 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog class="auth" id="authDialog" aria-labelledby="authTitle">
+    <div class="auth-card">
+      <div class="auth-top">
+        <div>
+          <strong id="authTitle">登录</strong>
+          <small id="authSub">SIGN IN</small>
+        </div>
+        <button class="icon-btn round-btn" id="authClose" type="button" aria-label="关闭" title="关闭">
+          <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+
+      <div class="auth-alert" id="authAlert" role="status" hidden></div>
+
+      <section class="auth-view" data-view="signin">
+        <form class="auth-form" id="signinForm" novalidate>
+          <label class="field"><span>邮箱</span>
+            <input type="email" name="email" autocomplete="username" inputmode="email" placeholder="you@example.com" required>
+          </label>
+          <label class="field"><span>密码</span>
+            <input type="password" name="password" autocomplete="current-password" placeholder="至少 6 位" required>
+          </label>
+          <button class="auth-submit" type="submit">登录</button>
+        </form>
+        <div class="auth-links">
+          <button type="button" data-go="reset">忘记密码</button>
+          <span>·</span>
+          <button type="button" data-go="signup">邮箱注册</button>
+        </div>
+      </section>
+
+      <section class="auth-view" data-view="signup" hidden>
+        <form class="auth-form" id="signupForm" novalidate>
+          <label class="field"><span>邮箱</span>
+            <input type="email" name="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
+          </label>
+          <label class="field"><span>密码</span>
+            <input type="password" name="password" autocomplete="new-password" placeholder="至少 6 位" required>
+          </label>
+          <label class="field"><span>确认密码</span>
+            <input type="password" name="confirm" autocomplete="new-password" placeholder="再输一次" required>
+          </label>
+          <button class="auth-submit" type="submit">创建账号</button>
+        </form>
+        <p class="auth-note">注册后 Supabase 会发一封验证邮件，点里面的链接才算生效；如果开了「自动确认」就直接登录。</p>
+        <div class="auth-links"><button type="button" data-go="signin">已有账号，直接登录</button></div>
+      </section>
+
+      <section class="auth-view" data-view="reset" hidden>
+        <form class="auth-form" id="resetForm" novalidate>
+          <label class="field"><span>注册邮箱</span>
+            <input type="email" name="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
+          </label>
+          <button class="auth-submit" type="submit">发送重置邮件</button>
+        </form>
+        <p class="auth-note">邮件里的链接会打开这个页面，然后就能设置新密码。</p>
+        <div class="auth-links"><button type="button" data-go="signin">返回登录</button></div>
+      </section>
+
+      <section class="auth-view" data-view="newpass" hidden>
+        <form class="auth-form" id="newpassForm" novalidate>
+          <label class="field"><span>新密码</span>
+            <input type="password" name="password" autocomplete="new-password" placeholder="至少 6 位" required>
+          </label>
+          <label class="field"><span>确认新密码</span>
+            <input type="password" name="confirm" autocomplete="new-password" placeholder="再输一次" required>
+          </label>
+          <button class="auth-submit" type="submit">保存新密码</button>
+        </form>
+        <p class="auth-note">设置完会直接登录，不用再输一次。</p>
+      </section>
+
+      <section class="auth-view" data-view="account" hidden>
+        <div class="auth-id">
+          <span class="avatar" id="acctAvatar">?</span>
+          <div>
+            <strong id="acctEmail">—</strong>
+            <small id="acctSince"></small>
+          </div>
+        </div>
+        <dl class="auth-meta">
+          <div><dt>上次登录</dt><dd id="acctLast">—</dd></div>
+          <div><dt>邮箱状态</dt><dd id="acctVerified">—</dd></div>
+        </dl>
+        <div class="auth-actions">
+          <button class="auth-submit ghost" type="button" data-go="changepass">修改密码</button>
+          <button class="auth-submit" type="button" id="signOutBtn">退出登录</button>
+        </div>
+      </section>
+
+      <section class="auth-view" data-view="changepass" hidden>
+        <form class="auth-form" id="changepassForm" novalidate>
+          <label class="field"><span>当前密码</span>
+            <input type="password" name="current" autocomplete="current-password" placeholder="先验证一下是你本人" required>
+          </label>
+          <label class="field"><span>新密码</span>
+            <input type="password" name="password" autocomplete="new-password" placeholder="至少 6 位" required>
+          </label>
+          <label class="field"><span>确认新密码</span>
+            <input type="password" name="confirm" autocomplete="new-password" placeholder="再输一次" required>
+          </label>
+          <button class="auth-submit" type="submit">保存新密码</button>
+        </form>
+        <div class="auth-links"><button type="button" data-go="account">取消</button></div>
+      </section>
+
+      <section class="auth-view" data-view="setup" hidden>
+        <form class="auth-form" id="setupForm" novalidate>
+          <label class="field"><span>Publishable / anon key</span>
+            <input type="text" name="key" spellcheck="false" autocomplete="off" placeholder="sb_publishable_… 或 eyJhbGciOi…" required>
+          </label>
+          <button class="auth-submit" type="submit">保存并连接</button>
+        </form>
+        <p class="auth-note">在 Supabase 控制台 <code>Project Settings → API Keys</code> 里复制。这个 key 本来就公开，只用来连项目；数据安全靠数据库的 RLS 策略，别拿 <code>service_role</code> 或数据库密码放前端。</p>
+      </section>
+    </div>
+  </dialog>
 
   <script>
     const SITES = [
@@ -701,6 +943,7 @@
       });
 
       document.addEventListener('keydown', (event) => {
+        if (document.querySelector('dialog[open]')) return;
         const tag = (event.target && event.target.tagName || '').toLowerCase();
         const typing = ['input', 'textarea', 'select'].includes(tag);
         if (event.key === '/' && !typing) {
@@ -737,6 +980,513 @@
     }
 
     bind();
+  </script>
+
+  <script>
+    /* ------------------------------------------------------------------
+       账号系统：直接调 Supabase Auth（GoTrue）的 REST 接口
+       - 不引入任何 CDN 脚本，仍然是单文件
+       - 邮箱注册 / 登录 / 退出 / 忘记密码 / 修改密码
+       - 会话存在 localStorage，token 过期自动 refresh
+    ------------------------------------------------------------------ */
+    (function () {
+      'use strict';
+
+      /* 从这里改配置：Project Settings → API Keys 里的 anon public / sb_publishable_… */
+      const SUPABASE_URL = 'https://uhbpvptqskbcldtnjqpq.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_k11EImuHLK2as-WwOe-pwQ_XT1zmqcb';
+
+      const KEY_STORE = 'hh-auth-key';
+      const SESSION_STORE = 'hh-auth-session';
+
+      const $id = (id) => document.getElementById(id);
+      const toast = (text) => { if (typeof showToast === 'function') showToast(text); };
+      const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+      const readStore = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+      const writeStore = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+
+      const fmt = (iso) => {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        if (isNaN(d)) return '—';
+        return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
+      };
+
+      class AuthError extends Error {
+        constructor(code, message, status) {
+          super(message);
+          this.code = code;
+          this.status = status;
+        }
+      }
+
+      const MESSAGES = {
+        no_key: '还没配置 Supabase 密钥',
+        no_session: '登录状态已过期，请重新登录',
+        invalid_credentials: '邮箱或密码不正确',
+        email_not_confirmed: '邮箱还没验证，先点邮件里的验证链接',
+        user_already_exists: '这个邮箱已经注册了，直接登录吧',
+        email_exists: '这个邮箱已经注册了，直接登录吧',
+        weak_password: '密码太弱了，至少 6 位',
+        signup_disabled: '这个项目暂时关闭了邮箱注册',
+        email_provider_disabled: '这个项目关闭了邮箱登录',
+        over_email_send_rate_limit: '邮件发得太频繁，等一分钟再试',
+        over_request_rate_limit: '操作太频繁，稍后再试',
+        reauthentication_needed: '为了安全，请先输入当前密码',
+        same_password: '新密码不能和当前密码一样',
+        provider_disabled: '这个登录方式被关闭了'
+      };
+
+      function friendly(data, status) {
+        const code = data && (data.error_code || data.error);
+        if (code && MESSAGES[code]) return MESSAGES[code];
+        const msg = (data && (data.msg || data.error_description || data.message)) || '';
+        if (/invalid login credentials/i.test(msg)) return MESSAGES.invalid_credentials;
+        if (/email not confirmed/i.test(msg)) return MESSAGES.email_not_confirmed;
+        if (/already registered|already exists/i.test(msg)) return MESSAGES.user_already_exists;
+        if (/at least 6 characters/i.test(msg)) return MESSAGES.weak_password;
+        if (/rate limit|too many/i.test(msg)) return MESSAGES.over_request_rate_limit;
+        if (/redirect/i.test(msg)) return '回调地址没在 Supabase 白名单里';
+        if (/JWT|api key/i.test(msg)) return '密钥不对，检查一下是不是复制全了';
+        return msg || ('请求失败（' + status + '）');
+      }
+
+      function anonKey() {
+        return (SUPABASE_KEY || readStore(KEY_STORE) || '').trim();
+      }
+
+      /* ---------- 网络 ---------- */
+      async function request(path, opts) {
+        opts = opts || {};
+        const key = anonKey();
+        if (!key) throw new AuthError('no_key', MESSAGES.no_key);
+
+        const headers = { apikey: key, 'Content-Type': 'application/json' };
+        if (opts.token) headers.Authorization = 'Bearer ' + opts.token;
+
+        let res;
+        try {
+          res = await fetch(SUPABASE_URL + path, {
+            method: opts.method || 'POST',
+            headers: headers,
+            body: opts.body ? JSON.stringify(opts.body) : undefined
+          });
+        } catch (e) {
+          throw new AuthError('network', '连不上 Supabase，检查一下网络或代理');
+        }
+
+        const raw = await res.text();
+        let data = null;
+        if (raw) { try { data = JSON.parse(raw); } catch (e) { data = null; } }
+
+        if (!res.ok) {
+          const code = data && (data.error_code || data.code || data.error);
+          throw new AuthError(String(code || res.status), friendly(data, res.status), res.status);
+        }
+        return data || {};
+      }
+
+      /* ---------- 会话 ---------- */
+      function readSession() {
+        try { return JSON.parse(localStorage.getItem(SESSION_STORE) || 'null'); } catch (e) { return null; }
+      }
+      function writeSession(data) {
+        if (!data || !data.access_token) return null;
+        const prev = readSession() || {};
+        const s = {
+          access_token: data.access_token,
+          refresh_token: data.refresh_token || prev.refresh_token || '',
+          expires_at: Date.now() + (Number(data.expires_in) || 3600) * 1000,
+          user: data.user || prev.user || null
+        };
+        try { localStorage.setItem(SESSION_STORE, JSON.stringify(s)); } catch (e) {}
+        return s;
+      }
+      function patchUser(user) {
+        const s = readSession();
+        if (!s || !user) return null;
+        s.user = user;
+        try { localStorage.setItem(SESSION_STORE, JSON.stringify(s)); } catch (e) {}
+        return s;
+      }
+      function clearSession() {
+        try { localStorage.removeItem(SESSION_STORE); } catch (e) {}
+        pendingRecovery = null;
+      }
+
+      async function ensureSession() {
+        let s = readSession();
+        if (!s || !s.access_token) return null;
+        if (!s.expires_at || Date.now() < s.expires_at - 60000) return s;
+        if (!s.refresh_token) { clearSession(); return null; }
+        try {
+          const data = await request('/auth/v1/token?grant_type=refresh_token', { body: { refresh_token: s.refresh_token } });
+          return writeSession(data);
+        } catch (e) {
+          if (e.status === 400 || e.status === 401 || e.status === 403) clearSession();
+          return null;
+        }
+      }
+
+      async function loadUser(force) {
+        const s = await ensureSession();
+        if (!s) return null;
+        if (!force && s.user && s.user.email) return s.user;
+        try {
+          const user = await request('/auth/v1/user', { method: 'GET', token: s.access_token });
+          patchUser(user);
+          return user;
+        } catch (e) {
+          if (e.status === 401 || e.status === 403) { clearSession(); return null; }
+          /* 网络问题就先用缓存，别把人踢下线 */
+          return s.user || null;
+        }
+      }
+
+      /* ---------- 动作 ---------- */
+      async function signIn(email, password) {
+        const data = await request('/auth/v1/token?grant_type=password', { body: { email: email, password: password } });
+        writeSession(data);
+        return data.user;
+      }
+
+      async function signUp(email, password) {
+        const data = await request('/auth/v1/signup', { body: { email: email, password: password } });
+        if (data.access_token) {
+          writeSession(data);
+          return { user: data.user, confirmed: true };
+        }
+        return { user: data.user || null, confirmed: false };
+      }
+
+      async function requestReset(email) {
+        const body = { email: email };
+        if (/^https?:$/.test(location.protocol)) body.redirect_to = location.href.split('#')[0];
+        try {
+          await request('/auth/v1/recover', { body: body });
+        } catch (e) {
+          if (/回调地址/.test(e.message)) await request('/auth/v1/recover', { body: { email: email } });
+          else throw e;
+        }
+      }
+
+      async function saveRecoveredPassword(password) {
+        if (!pendingRecovery || !pendingRecovery.access_token) throw new AuthError('no_session', '重置链接已失效，请重新发一封');
+        const user = await request('/auth/v1/user', { method: 'PUT', token: pendingRecovery.access_token, body: { password: password } });
+        writeSession({
+          access_token: pendingRecovery.access_token,
+          refresh_token: pendingRecovery.refresh_token,
+          expires_in: pendingRecovery.expires_in,
+          user: user
+        });
+        pendingRecovery = null;
+        return user;
+      }
+
+      async function changePassword(current, next) {
+        const s = await ensureSession();
+        if (!s) throw new AuthError('no_session', MESSAGES.no_session);
+        const email = s.user && s.user.email;
+        if (!email) throw new AuthError('no_session', MESSAGES.no_session);
+
+        try {
+          await signIn(email, current);
+        } catch (e) {
+          if (e.code === 'invalid_credentials' || e.code === '400') throw new AuthError('invalid_credentials', '当前密码不对');
+          throw e;
+        }
+
+        const fresh = readSession();
+        const user = await request('/auth/v1/user', { method: 'PUT', token: fresh.access_token, body: { password: next } });
+        patchUser(user);
+        return user;
+      }
+
+      async function signOut() {
+        const s = readSession();
+        if (s && s.access_token) {
+          try { await request('/auth/v1/logout', { token: s.access_token, body: null }); } catch (e) {}
+        }
+        clearSession();
+      }
+
+      /* ---------- 界面 ---------- */
+      const dlg = $id('authDialog');
+      const titleEl = $id('authTitle');
+      const subEl = $id('authSub');
+      const alertEl = $id('authAlert');
+      const authBtn = $id('authBtn');
+      const avatarEl = $id('authAvatar');
+      const labelEl = $id('authLabel');
+
+      const views = {};
+      Array.prototype.forEach.call(dlg.querySelectorAll('[data-view]'), (el) => { views[el.dataset.view] = el; });
+
+      const VIEW_META = {
+        signin: ['登录', 'SIGN IN'],
+        signup: ['邮箱注册', 'SIGN UP'],
+        reset: ['找回密码', 'RESET PASSWORD'],
+        newpass: ['设置新密码', 'NEW PASSWORD'],
+        changepass: ['修改密码', 'CHANGE PASSWORD'],
+        account: ['我的账号', 'MY ACCOUNT'],
+        setup: ['连接 Supabase', 'CONNECTION']
+      };
+
+      let pendingRecovery = null;
+
+      function setAlert(kind, text) {
+        alertEl.className = 'auth-alert' + (kind ? ' ' + kind : '');
+        alertEl.textContent = text;
+        alertEl.hidden = false;
+      }
+      function clearAlert() {
+        alertEl.hidden = true;
+        alertEl.className = 'auth-alert';
+        alertEl.textContent = '';
+      }
+
+      function renderAccount(user) {
+        const email = (user && user.email) || '';
+        $id('acctAvatar').textContent = (email || '?').slice(0, 1).toUpperCase();
+        $id('acctEmail').textContent = email || '—';
+        $id('acctSince').textContent = user && user.created_at ? '注册于 ' + fmt(user.created_at) : '';
+        $id('acctLast').textContent = user && user.last_sign_in_at ? fmt(user.last_sign_in_at) : '—';
+        const verified = user && (user.email_confirmed_at || user.confirmed_at);
+        $id('acctVerified').textContent = verified ? '已验证' : '待验证';
+      }
+
+      function renderButton() {
+        const s = readSession();
+        const email = (s && s.user && s.user.email) || '';
+        authBtn.classList.toggle('is-in', !!email);
+        if (email) {
+          avatarEl.textContent = email.slice(0, 1).toUpperCase();
+          labelEl.textContent = email.split('@')[0];
+          authBtn.title = email + ' · 账号设置';
+          authBtn.setAttribute('aria-label', '账号设置：' + email);
+        } else {
+          labelEl.textContent = '登录';
+          authBtn.title = '登录 / 注册账号';
+          authBtn.setAttribute('aria-label', '登录或注册账号');
+        }
+      }
+
+      function showView(name) {
+        if (!views[name]) name = 'signin';
+        currentView = name;
+        Object.keys(views).forEach((k) => { views[k].hidden = k !== name; });
+        const meta = VIEW_META[name] || VIEW_META.signin;
+        titleEl.textContent = meta[0];
+        subEl.textContent = meta[1];
+        clearAlert();
+        if (name === 'account') {
+          const s = readSession();
+          renderAccount(s && s.user);
+        }
+      }
+
+      let currentView = 'signin';
+
+      function openDialog(view) {
+        if (!anonKey()) {
+          showView('setup');
+        } else {
+          const s = readSession();
+          showView(view || (s && s.user && s.user.email ? 'account' : 'signin'));
+        }
+        if (!dlg.open) {
+          if (typeof dlg.showModal === 'function') dlg.showModal();
+          else dlg.setAttribute('open', '');
+        }
+        const input = dlg.querySelector('section[data-view]:not([hidden]) input');
+        if (input) setTimeout(() => { try { input.focus(); } catch (e) {} }, 40);
+      }
+
+      function closeDialog() {
+        if (typeof dlg.close === 'function') dlg.close();
+        else dlg.removeAttribute('open');
+      }
+
+      function bindForm(form, handler) {
+        if (!form) return;
+        form.addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const btn = form.querySelector('[type="submit"]');
+          if (btn && btn.disabled) return;
+          clearAlert();
+          if (btn) btn.disabled = true;
+          try {
+            await handler(new FormData(form));
+          } catch (err) {
+            setAlert('err', (err && err.message) || '出了点问题，稍后再试');
+          } finally {
+            if (btn) btn.disabled = false;
+          }
+        });
+      }
+
+      /* 登录 */
+      bindForm($id('signinForm'), async (fd) => {
+        const email = String(fd.get('email') || '').trim();
+        const password = String(fd.get('password') || '');
+        if (!emailOk(email)) return setAlert('err', '邮箱格式不太对');
+        if (!password) return setAlert('err', '密码还没填');
+
+        await signIn(email, password);
+        const user = await loadUser();
+        renderButton();
+        showView('account');
+        renderAccount(user || (readSession() || {}).user);
+        setAlert('ok', '登录成功，欢迎回来');
+      });
+
+      /* 注册 */
+      bindForm($id('signupForm'), async (fd) => {
+        const email = String(fd.get('email') || '').trim();
+        const password = String(fd.get('password') || '');
+        const confirm = String(fd.get('confirm') || '');
+        if (!emailOk(email)) return setAlert('err', '邮箱格式不太对');
+        if (password.length < 6) return setAlert('err', '密码至少 6 位');
+        if (password !== confirm) return setAlert('err', '两次输入的密码不一样');
+
+        const res = await signUp(email, password);
+        if (res.confirmed) {
+          const user = await loadUser();
+          renderButton();
+          showView('account');
+          renderAccount(user || res.user);
+          setAlert('ok', '注册成功，已经帮你登录了');
+        } else {
+          showView('signin');
+          const input = $id('signinForm').querySelector('[name="email"]');
+          if (input) input.value = email;
+          setAlert('ok', '注册成功。去邮箱点一下验证链接，然后回来登录。');
+        }
+      });
+
+      /* 忘记密码 */
+      bindForm($id('resetForm'), async (fd) => {
+        const email = String(fd.get('email') || '').trim();
+        if (!emailOk(email)) return setAlert('err', '邮箱格式不太对');
+        await requestReset(email);
+        showView('signin');
+        const input = $id('signinForm').querySelector('[name="email"]');
+        if (input) input.value = email;
+        setAlert('ok', '重置邮件已发出，去邮箱点链接（没收到就看下垃圾箱）');
+      });
+
+      /* 邮件链接进来的新密码 */
+      bindForm($id('newpassForm'), async (fd) => {
+        const password = String(fd.get('password') || '');
+        const confirm = String(fd.get('confirm') || '');
+        if (password.length < 6) return setAlert('err', '密码至少 6 位');
+        if (password !== confirm) return setAlert('err', '两次输入的密码不一样');
+        if (!pendingRecovery) throw new AuthError('no_session', '重置链接已失效，请重新发一封');
+
+        await saveRecoveredPassword(password);
+        const user = await loadUser();
+        renderButton();
+        showView('account');
+        renderAccount(user || (readSession() || {}).user);
+        setAlert('ok', '密码已更新，已经帮你登录了');
+      });
+
+      /* 改密码 */
+      bindForm($id('changepassForm'), async (fd) => {
+        const current = String(fd.get('current') || '');
+        const password = String(fd.get('password') || '');
+        const confirm = String(fd.get('confirm') || '');
+        if (!current) return setAlert('err', '先填当前密码');
+        if (password.length < 6) return setAlert('err', '新密码至少 6 位');
+        if (password === current) return setAlert('err', '新密码不能和当前密码一样');
+        if (password !== confirm) return setAlert('err', '两次输入的新密码不一样');
+
+        const user = await changePassword(current, password);
+        renderButton();
+        showView('account');
+        renderAccount(user || (readSession() || {}).user);
+        setAlert('ok', '密码已修改，下次用新密码登录');
+        toast('密码已修改');
+      });
+
+      /* 密钥没配时的输入口 */
+      bindForm($id('setupForm'), async (fd) => {
+        const key = String(fd.get('key') || '').trim();
+        if (key.length < 40) return setAlert('err', '这看着不像 anon / publishable key（应该是一串很长的字符）');
+        writeStore(KEY_STORE, key);
+        showView('signin');
+        setAlert('ok', '已保存，现在可以注册或登录了');
+      });
+
+      /* 退出 */
+      $id('signOutBtn').addEventListener('click', async () => {
+        await signOut();
+        renderButton();
+        showView('signin');
+        setAlert('ok', '已退出登录');
+        toast('已退出登录');
+      });
+
+      /* 切换视图 / 关闭 */
+      Array.prototype.forEach.call(dlg.querySelectorAll('[data-go]'), (el) => {
+        el.addEventListener('click', () => showView(el.dataset.go));
+      });
+      $id('authClose').addEventListener('click', closeDialog);
+      dlg.addEventListener('click', (ev) => { if (ev.target === dlg) closeDialog(); });
+      authBtn.addEventListener('click', () => openDialog());
+
+      /* 邮件链接里的 token（验证 / 重置密码） */
+      function captureHash() {
+        const hash = location.hash || '';
+        if (hash.length < 3) return null;
+        const params = new URLSearchParams(hash.slice(1));
+        const access = params.get('access_token');
+        const error = params.get('error_description') || params.get('error');
+        if (!access && !error) return null;
+
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+        if (error) {
+          setAlert('err', decodeURIComponent(error.replace(/\+/g, ' ')));
+          return null;
+        }
+        return {
+          type: params.get('type') || '',
+          access: access,
+          refresh: params.get('refresh_token') || '',
+          expires: Number(params.get('expires_in')) || 3600
+        };
+      }
+
+      async function boot() {
+        const fromEmail = captureHash();
+
+        if (fromEmail) {
+          if (fromEmail.type === 'recovery') {
+            pendingRecovery = { access_token: fromEmail.access, refresh_token: fromEmail.refresh, expires_in: fromEmail.expires };
+            openDialog('newpass');
+            setAlert('ok', '验证通过，设置一个新密码吧');
+          } else {
+            writeSession({ access_token: fromEmail.access, refresh_token: fromEmail.refresh, expires_in: fromEmail.expires, user: null });
+            const user = await loadUser();
+            renderButton();
+            openDialog('account');
+            renderAccount(user);
+            setAlert('ok', fromEmail.type === 'signup' ? '邮箱验证成功，欢迎加入' : '登录成功');
+          }
+          return;
+        }
+
+        await ensureSession();
+        await loadUser(true);
+        renderButton();
+
+        if (location.hash === '#login') openDialog();
+      }
+
+      /* 回车提交、Esc 关闭由原生 dialog 负责 */
+      renderButton();
+      boot();
+    })();
   </script>
 </body>
 </html>
