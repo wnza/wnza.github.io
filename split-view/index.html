@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f6f3" id="themeColor">
+  <meta name="referrer" content="no-referrer">
+  <title>双屏 · 左右同时播放</title>
+  <link rel="shortcut icon" href="https://r.8b.io/160029/assets/images/363957_128x128_1.png" type="image/x-icon">
+  <script>
+    try {
+      if (localStorage.getItem('minimal-theme') === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    } catch (e) {}
+  </script>
+  <style>
+    :root {
+      --bg: #f6f6f3;
+      --panel: #fbfbf8;
+      --card: #ffffff;
+      --ink: #171717;
+      --ink-2: #3b3b38;
+      --muted: #77776f;
+      --muted-2: #a2a29a;
+      --line: #e7e7e1;
+      --line-2: #d6d6ce;
+      --soft: #efefea;
+      --active: #171717;
+      --active-ink: #fbfbf8;
+      --font: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+      --mono: "SFMono-Regular", "Cascadia Code", "Consolas", monospace;
+      --split: 50%;
+    }
+    html[data-theme="dark"] {
+      --bg: #111110;
+      --panel: #151514;
+      --card: #191918;
+      --ink: #f0f0eb;
+      --ink-2: #d2d2cb;
+      --muted: #96968d;
+      --muted-2: #6f6f68;
+      --line: #292927;
+      --line-2: #393936;
+      --soft: #20201e;
+      --active: #f0f0eb;
+      --active-ink: #141413;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    html { -webkit-text-size-adjust: 100%; color-scheme: light; }
+    html[data-theme="dark"] { color-scheme: dark; }
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    [hidden] { display: none !important; }
+    :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+    /* ---------- 顶栏 ---------- */
+    .top {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 52px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; flex: none; }
+    .brand .mark {
+      width: 28px; height: 28px;
+      display: grid; place-items: center;
+      border-radius: 7px;
+      background: var(--active);
+      color: var(--active-ink);
+      font-family: var(--mono);
+      font-size: 13px; font-weight: 700;
+    }
+    .brand .copy { display: flex; flex-direction: column; line-height: 1; }
+    .brand strong { font-size: 13px; font-weight: 650; letter-spacing: .08em; }
+    .brand small { margin-top: 5px; font-family: var(--mono); font-size: 6.5px; letter-spacing: .18em; color: var(--muted-2); }
+
+    .hint {
+      flex: 1;
+      min-width: 0;
+      color: var(--muted-2);
+      font-size: 10.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hint b { color: var(--muted); font-weight: 500; }
+
+    .top-acts { display: flex; align-items: center; gap: 6px; flex: none; }
+    .btn {
+      height: 30px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 10.5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color .18s, color .18s, background .18s;
+    }
+    .btn:hover { border-color: var(--line-2); color: var(--ink); background: var(--card); }
+    .btn.icon { width: 30px; padding: 0; display: inline-grid; place-items: center; font-size: 12px; }
+    .btn.solid { background: var(--active); border-color: var(--active); color: var(--active-ink); }
+    .btn.solid:hover { opacity: .88; background: var(--active); color: var(--active-ink); }
+    .btn.on { background: var(--active); border-color: var(--active); color: var(--active-ink); }
+
+    /* ---------- 舞台 ---------- */
+    .stage {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      position: relative;
+    }
+    .stage.vertical { flex-direction: column; }
+
+    .pane {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      flex: 0 0 var(--split);
+      background: var(--card);
+    }
+    .pane[data-side="right"] { flex: 1 1 0; }
+
+    .bar {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      height: 40px;
+      padding: 0 8px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .bar .tag {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: .12em;
+      color: var(--muted-2);
+      padding: 0 2px;
+    }
+    .addr {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .addr input {
+      flex: 1;
+      min-width: 0;
+      height: 28px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 11px;
+      outline: 0;
+      transition: border-color .18s, background .18s;
+    }
+    .addr input::placeholder { color: var(--muted-2); }
+    .addr input:focus { border-color: var(--ink-2); background: var(--card); }
+    .addr .go {
+      height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--line-2);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--ink-2);
+      font-size: 10.5px;
+      cursor: pointer;
+    }
+    .addr .go:hover { border-color: var(--ink-2); color: var(--ink); }
+
+    .chip {
+      flex: none;
+      max-width: 90px;
+      height: 20px;
+      padding: 0 6px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line-2);
+      border-radius: 4px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chip.embed { color: var(--ink-2); border-color: var(--line-2); background: var(--soft); }
+
+    .acts { display: flex; align-items: center; gap: 2px; flex: none; }
+    .acts button {
+      width: 26px; height: 26px;
+      display: grid; place-items: center;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--muted-2);
+      font-size: 12px;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .acts button:hover { background: var(--soft); color: var(--ink); }
+    .acts .word { width: auto; padding: 0 7px; font-size: 10px; }
+
+    .view { position: relative; flex: 1; min-height: 0; background: var(--card); }
+    .view iframe,
+    .view video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+    .view video { object-fit: contain; }
+    .stage.dragging .view iframe,
+    .stage.dragging .view video { pointer-events: none; }
+
+    .empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 24px;
+      text-align: center;
+      overflow: auto;
+    }
+    .empty .glyph {
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      border: 1px solid var(--line-2);
+      border-radius: 50%;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .empty h2 { margin: 14px 0 0; font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+    .empty p { margin: 7px 0 0; max-width: 320px; color: var(--muted-2); font-size: 10.5px; line-height: 1.75; }
+    .empty .tip { margin-top: 10px; font-size: 9.5px; color: var(--muted-2); opacity: .8; }
+    .empty code { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+
+    /* ---------- 分隔条 ---------- */
+    .divider {
+      flex: 0 0 9px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      background: var(--line);
+      cursor: col-resize;
+      touch-action: none;
+      transition: background .15s;
+      z-index: 2;
+    }
+    .divider:hover,
+    .stage.dragging .divider { background: var(--line-2); }
+    .stage.vertical .divider { cursor: row-resize; }
+    .divider .grip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      width: 100%;
+      height: 100%;
+      color: var(--muted-2);
+    }
+    .divider .grip i {
+      display: block;
+      width: 2px; height: 2px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 0 0 currentColor;
+    }
+    .divider .grip i:nth-child(2) { opacity: .75; }
+    .divider:hover .grip i { background: var(--ink-2); }
+    .stage.vertical .divider .grip { flex-direction: column; }
+    .divider::after {
+      content: "";
+      position: absolute;
+      inset: 0 -6px;
+    }
+    .stage.vertical .divider::after { inset: -6px 0; }
+
+    /* ---------- 提示 ---------- */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      z-index: 40;
+      padding: 8px 12px;
+      border: 1px solid var(--line-2);
+      border-radius: 6px;
+      background: var(--active);
+      color: var(--active-ink);
+      font-size: 10px;
+      box-shadow: 0 10px 28px -14px rgba(0, 0, 0, .4);
+      opacity: 0;
+      transform: translate(-50%, 8px);
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 820px) {
+      .top { height: auto; flex-wrap: wrap; padding: 9px 10px; gap: 8px; }
+      .hint { order: 3; flex: 1 1 100%; white-space: normal; font-size: 9.5px; line-height: 1.5; }
+      .top-acts { margin-left: auto; }
+      .btn { padding: 0 8px; }
+      .bar { height: 38px; gap: 5px; padding: 0 6px; }
+      .bar .tag, .chip { display: none; }
+      .acts .word { display: none; }
+      .empty p { font-size: 10px; }
+    }
+    /* 手机竖屏硬要左右分屏时，把地址栏压到最省地方 */
+    @media (max-width: 560px) {
+      .bar { padding: 0 4px; gap: 3px; }
+      .addr { gap: 3px; }
+      .addr .go { display: none; }
+      .addr input { height: 26px; padding: 0 6px; font-size: 10px; }
+      .acts button { width: 22px; height: 22px; font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="../index.html" title="回到导航">
+      <span class="mark">双</span>
+      <span class="copy"><strong>双屏</strong><small>SPLIT VIEW</small></span>
+    </a>
+    <div class="hint">左右各开一个，<b>同时播放</b>。B站 / YouTube / Vimeo / 腾讯 / 优酷 的视频链接会自动转成嵌入播放器。</div>
+    <div class="top-acts">
+      <button class="btn icon" id="popupBtn" type="button" aria-pressed="false"
+              title="禁弹窗：跨域网页里点链接会想开新窗口，父页面拦不住只能禁掉（开启后点了没反应就是它想弹窗）">⊘</button>
+      <button class="btn" id="windowsBtn" type="button" title="把两边开成左右并排的两个浏览器窗口（抖音这类禁止被嵌入的站用这个）">⧉ 双窗口</button>
+      <button class="btn" id="swapBtn" type="button" title="交换左右两边">⇄ 交换</button>
+      <button class="btn icon" id="resetBtn" type="button" title="分界回到中间" aria-label="分界回到中间">◫</button>
+      <button class="btn icon" id="orientBtn" type="button" title="切换上下 / 左右分屏" aria-label="切换分屏方向">⇅</button>
+      <button class="btn icon" id="themeBtn" type="button" title="切换明暗主题" aria-label="切换主题">◐</button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <section class="pane" data-side="left" aria-label="左侧">
+      <div class="bar">
+        <span class="tag">LEFT</span>
+        <form class="addr" data-form>
+          <input data-input type="text" spellcheck="false" autocomplete="off" placeholder="粘贴视频链接或网址，回车打开">
+          <span class="chip" data-mode hidden></span>
+          <button class="go" type="submit">打开</button>
+        </form>
+        <div class="acts">
+          <button data-act="paste" class="word" type="button" title="从剪贴板粘贴">粘贴</button>
+          <button data-act="reload" type="button" title="重新加载">↻</button>
+          <button data-act="window" type="button" title="把这一屏开成占半屏的独立窗口（禁止被嵌入的站用这个）">⧉</button>
+          <button data-act="clear" type="button" title="清空这一屏">✕</button>
+        </div>
+      </div>
+      <div class="view" data-view>
+        <div class="empty" data-empty>
+          <div class="glyph">L</div>
+          <h2>左边这一屏</h2>
+          <p>粘一个视频链接，回车就开始播。<br>支持 B站、YouTube、Vimeo、腾讯视频、优酷，也支持 <code>.mp4</code> / <code>.webm</code> 直链。</p>
+          <p class="tip">普通网页也能开，但抖音、知乎这类站禁止被嵌入；显示“拒绝连接”就点右上角 <b>⧉ 双窗口</b>。</p>
+        </div>
+        <iframe data-frame title="左侧网页" hidden
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture; web-share"
+          allowfullscreen referrerpolicy="no-referrer"></iframe>
+        <video data-video controls playsinline preload="metadata" hidden></video>
+      </div>
+    </section>
+
+    <div class="divider" id="divider" role="separator" aria-orientation="vertical"
+         aria-label="拖动调整左右宽度，双击回到中间" tabindex="0">
+      <span class="grip"><i></i><i></i><i></i></span>
+    </div>
+
+    <section class="pane" data-side="right" aria-label="右侧">
+      <div class="bar">
+        <span class="tag">RIGHT</span>
+        <form class="addr" data-form>
+          <input data-input type="text" spellcheck="false" autocomplete="off" placeholder="再粘一个视频链接，两边同时播">
+          <span class="chip" data-mode hidden></span>
+          <button class="go" type="submit">打开</button>
+        </form>
+        <div class="acts">
+          <button data-act="paste" class="word" type="button" title="从剪贴板粘贴">粘贴</button>
+          <button data-act="reload" type="button" title="重新加载">↻</button>
+          <button data-act="window" type="button" title="把这一屏开成占半屏的独立窗口（禁止被嵌入的站用这个）">⧉</button>
+          <button data-act="clear" type="button" title="清空这一屏">✕</button>
+        </div>
+      </div>
+      <div class="view" data-view>
+        <div class="empty" data-empty>
+          <div class="glyph">R</div>
+          <h2>右边这一屏</h2>
+          <p>再粘一个链接，两边各播各的，互不影响。</p>
+          <p class="tip">拖中间那条线调宽度，双击它回到 50 / 50。</p>        </div>
+        <iframe data-frame title="右侧网页" hidden
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture; web-share"
+          allowfullscreen referrerpolicy="no-referrer"></iframe>
+        <video data-video controls playsinline preload="metadata" hidden></video>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+      const stage = $('#stage');
+      const divider = $('#divider');
+      const toastEl = $('#toast');
+      const STORE = 'split-view-state';
+      const MIN = 12, MAX = 88;
+
+      let toastTimer = 0;
+      function toast(text) {
+        clearTimeout(toastTimer);
+        toastEl.textContent = text;
+        toastEl.classList.add('show');
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+      }
+
+      /* ---------------- 链接解析 ---------------- */
+
+      const VIDEO_EXT = /\.(mp4|webm|ogv|ogg|m4v|mov)$/i;
+
+      function normalize(raw) {
+        let t = String(raw || '').trim();
+        if (!t) return null;
+        if (t.startsWith('//')) t = 'https:' + t;
+        if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) {
+          if (/^[\w-]+(\.[\w-]+)+/.test(t)) t = 'https://' + t;
+          else return null;
+        }
+        try { return new URL(t); } catch (e) { return null; }
+      }
+
+      function secondsOf(value) {
+        if (!value) return 0;
+        const s = String(value).trim();
+        if (/^\d+$/.test(s)) return Number(s);
+        const m = s.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i);
+        if (!m) return 0;
+        return (Number(m[1] || 0) * 3600) + (Number(m[2] || 0) * 60) + Number(m[3] || 0);
+      }
+
+      /**
+       * 把用户粘的链接变成「能嵌进 iframe 的播放器地址」。
+       * 返回 { kind: 'embed' | 'page' | 'video' | 'hls' | 'short' | 'bad', src, label }
+       */
+      function resolve(raw) {
+        const url = normalize(raw);
+        if (!url) return { kind: 'bad', label: '看不懂这个链接' };
+
+        const host = url.hostname.replace(/^www\./, '').toLowerCase();
+        const path = url.pathname;
+
+        /* 哔哩哔哩 */
+        if (host === 'b23.tv') return { kind: 'short', label: 'b23.tv 短链' };
+        if (host === 'bilibili.com' || host.endsWith('.bilibili.com')) {
+          const m = path.match(/\/video\/(BV[0-9A-Za-z]+|av\d+)/i);
+          if (m) {
+            const id = m[1];
+            const key = /^bv/i.test(id) ? 'bvid=' + id : 'aid=' + id.replace(/^av/i, '');
+            const page = url.searchParams.get('p') || '1';
+            return {
+              kind: 'embed',
+              label: '哔哩哔哩',
+              src: 'https://player.bilibili.com/player.html?' + key +
+                   '&page=' + encodeURIComponent(page) +
+                   '&autoplay=1&high_quality=1&danmaku=0&as_wide=1'
+            };
+          }
+        }
+
+        /* YouTube */
+        if (host === 'youtu.be' || host === 'youtube.com' || host.endsWith('.youtube.com') || host === 'youtube-nocookie.com') {
+          let id = '';
+          if (host === 'youtu.be') id = path.split('/')[1] || '';
+          else if (path === '/watch') id = url.searchParams.get('v') || '';
+          else {
+            const m = path.match(/^\/(?:embed|shorts|live|v)\/([^/?#]+)/);
+            if (m) id = m[1];
+          }
+          if (id) {
+            let src = 'https://www.youtube.com/embed/' + encodeURIComponent(id) +
+                      '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+            const sec = secondsOf(url.searchParams.get('t') || url.searchParams.get('start'));
+            if (sec) src += '&start=' + sec;
+            return { kind: 'embed', label: 'YouTube', src: src };
+          }
+        }
+
+        /* Vimeo */
+        if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+          const m = path.match(/(\d{6,})/);
+          if (m) return { kind: 'embed', label: 'Vimeo', src: 'https://player.vimeo.com/video/' + m[1] + '?autoplay=1' };
+        }
+
+        /* 腾讯视频 */
+        if (host === 'v.qq.com') {
+          const m = path.match(/([A-Za-z0-9]{11,})\.html$/);
+          if (m) return {
+            kind: 'embed',
+            label: '腾讯视频',
+            src: 'https://v.qq.com/txp/iframe/player.html?vid=' + m[1] + '&autoplay=1'
+          };
+        }
+
+        /* 优酷 */
+        if (host === 'v.youku.com' || host === 'youku.com') {
+          const m = path.match(/id_([A-Za-z0-9=]+)\.html/);
+          if (m) return {
+            kind: 'embed',
+            label: '优酷',
+            src: 'https://player.youku.com/embed/' + m[1] + '?autoplay=1'
+          };
+        }
+
+        /* HLS 直播流，浏览器原生播不了 */
+        if (/\.m3u8$/i.test(path)) return { kind: 'hls', label: 'm3u8 直播流' };
+
+        /* 视频直链 */
+        if (VIDEO_EXT.test(path)) return { kind: 'video', label: '视频直链', src: url.href };
+
+        /* 普通网页 */
+        return { kind: 'page', label: host || '网页', src: url.href };
+      }
+
+      /* ---------------- 每一屏 ---------------- */
+
+      function pane(side) {
+        const root = $('.pane[data-side="' + side + '"]');
+        return {
+          side: side,
+          root: root,
+          form: $('[data-form]', root),
+          input: $('[data-input]', root),
+          chip: $('[data-mode]', root),
+          frame: $('[data-frame]', root),
+          video: $('[data-video]', root),
+          empty: $('[data-empty]', root),
+          loaded: false,
+          current: '',
+          raw: '',
+          href: '',
+          embed: false
+        };
+      }
+
+      const panes = { left: pane('left'), right: pane('right') };
+
+      /* 跨域 iframe 里父页面读不到 location.href。
+         target-self-ext 扩展会在里面 postMessage 出来，这里收到后同步地址栏。 */
+      function syncPaneUrl(p, href, title) {
+        if (!p.loaded || p.frame.hidden) return;
+        if (href === p.current) return;
+
+        let host = '';
+        try { host = new URL(href).hostname.replace(/^www\./, ''); } catch (e) {}
+
+        p.href = href;
+        p.raw = href;
+        p.current = href;
+        p.embed = false;
+        p.input.value = href;
+        p.chip.hidden = false;
+        p.chip.textContent = host || '网页';
+        p.chip.className = 'chip';
+        p.chip.title = title ? title + ' — ' + href : href;
+        save();
+      }
+
+      window.addEventListener('message', (ev) => {
+        const data = ev.data;
+        if (!data || data.__splitView !== true || data.type !== 'location' || typeof data.href !== 'string') return;
+        const hit = [panes.left, panes.right].find((p) => p.frame && p.frame.contentWindow === ev.source);
+        if (!hit) return;
+        syncPaneUrl(hit, data.href, typeof data.title === 'string' ? data.title : '');
+      });
+
+      function stopVideo(p) {
+        const v = p.video;
+        try { v.pause(); } catch (e) {}
+        v.removeAttribute('src');
+        try { v.load(); } catch (e) {}
+        v.hidden = true;
+      }
+
+      function stopFrame(p) {
+        p.frame.hidden = true;
+        p.frame.removeAttribute('src');
+      }
+
+      function showEmpty(p) {
+        stopVideo(p);
+        stopFrame(p);
+        p.empty.hidden = false;
+        p.loaded = false;
+        p.current = '';
+        p.raw = '';
+        p.href = '';
+        p.chip.hidden = true;
+        p.chip.textContent = '';
+        p.chip.className = 'chip';
+      }
+
+      function playVideo(p, src) {
+        stopFrame(p);
+        p.video.hidden = false;
+        p.video.src = src;
+        const attempt = p.video.play();
+        if (attempt && attempt.catch) {
+          attempt.catch(() => {
+            /* 浏览器拦自动播放时先静音播，用户再点音量 */
+            p.video.muted = true;
+            const retry = p.video.play();
+            if (retry && retry.catch) retry.catch(() => {});
+            toast('浏览器拦了自动播放，已静音开始，点音量键开声音');
+          });
+        }
+      }
+
+      function load(p, raw, opts) {
+        const res = resolve(raw);
+        const silent = opts && opts.silent;
+        const text = String(raw || '').trim();
+
+        if (res.kind !== 'embed' && res.kind !== 'page' && res.kind !== 'video') {
+          if (!silent) {
+            if (res.kind === 'short') toast('b23.tv 短链先在浏览器打开一次，换成 bilibili.com 的完整链接');
+            else if (res.kind === 'hls') toast('m3u8 直播流浏览器原生放不了，换个地址试试');
+            else toast('这不像个网址，检查一下再试');
+            p.input.value = p.raw || '';
+          }
+          return false;
+        }
+
+        stopVideo(p);
+        p.empty.hidden = true;
+        p.loaded = true;
+        p.current = res.src;
+        p.embed = res.kind === 'embed';
+        const parsed = normalize(raw);
+        p.href = parsed ? parsed.href : res.src;
+        if (res.kind === 'page' && !hintedPage) {
+          hintedPage = true;
+          toast('普通网页可能拒绝被嵌入，打不开就点右上角「双窗口」');
+        }
+
+        if (res.kind === 'video') {
+          playVideo(p, res.src);
+        } else {
+          p.video.hidden = true;
+          p.frame.hidden = false;
+          applySandbox(p.frame);
+          p.frame.src = res.src;
+        }
+
+        p.input.value = text;
+        p.raw = text;
+        p.chip.hidden = false;
+        p.chip.textContent = res.kind === 'embed' ? '嵌入 · ' + res.label : res.label;
+        p.chip.className = 'chip' + (res.kind === 'embed' ? ' embed' : '');
+        p.chip.title = res.kind === 'page'
+          ? '这是普通网页，如果一片空白说明对方禁止被嵌入'
+          : res.src;
+
+        return true;
+      }
+
+      function clearPane(p) {
+        showEmpty(p);
+        p.input.value = '';
+        p.raw = '';
+        save();
+      }
+
+      /* ---------------- 状态持久化 ---------------- */
+
+      function save() {
+        const state = {
+          split: parseFloat(getComputedStyle(stage).getPropertyValue('--split')) || 50,
+          vertical: stage.classList.contains('vertical'),
+          popups: blockPopups,
+          left: panes.left.loaded ? panes.left.input.value : '',
+          right: panes.right.loaded ? panes.right.input.value : ''
+        };
+        try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function readState() {
+        try { return JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { return null; }
+      }
+
+      /* ---------------- 分界 ---------------- */
+
+      function setSplit(pct, persist) {
+        const value = Math.max(MIN, Math.min(MAX, pct));
+        stage.style.setProperty('--split', value.toFixed(2) + '%');
+        divider.setAttribute('aria-valuenow', Math.round(value));
+        if (persist !== false) save();
+        return value;
+      }
+
+      function splitNow() {
+        return parseFloat(getComputedStyle(stage).getPropertyValue('--split')) || 50;
+      }
+
+      let dragging = false;
+      let hintedPage = false;
+
+      /* 跨域页面里的 target="_blank" 父页面改不了，只能靠 sandbox 去掉 allow-popups 来拦 */
+      const SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-modals allow-downloads allow-presentation';
+      let blockPopups = false;
+
+      function applySandbox(frame) {
+        if (blockPopups) frame.setAttribute('sandbox', SANDBOX);
+        else frame.removeAttribute('sandbox');
+      }
+
+      divider.addEventListener('pointerdown', (ev) => {
+        if (ev.button !== undefined && ev.button !== 0) return;
+        dragging = true;
+        stage.classList.add('dragging');
+        try { divider.setPointerCapture(ev.pointerId); } catch (e) {}
+        ev.preventDefault();
+      });
+
+      divider.addEventListener('pointermove', (ev) => {
+        if (!dragging) return;
+        const box = stage.getBoundingClientRect();
+        const vertical = stage.classList.contains('vertical');
+        const pct = vertical
+          ? ((ev.clientY - box.top) / box.height) * 100
+          : ((ev.clientX - box.left) / box.width) * 100;
+        setSplit(pct, false);
+      });
+
+      function endDrag(ev) {
+        if (!dragging) return;
+        dragging = false;
+        stage.classList.remove('dragging');
+        try { divider.releasePointerCapture(ev.pointerId); } catch (e) {}
+        save();
+      }
+      divider.addEventListener('pointerup', endDrag);
+      divider.addEventListener('pointercancel', endDrag);
+
+      divider.addEventListener('dblclick', () => { setSplit(50); toast('回到 50 / 50'); });
+
+      divider.addEventListener('keydown', (ev) => {
+        const vertical = stage.classList.contains('vertical');
+        const back = vertical ? 'ArrowUp' : 'ArrowLeft';
+        const fwd = vertical ? 'ArrowDown' : 'ArrowRight';
+        const step = ev.shiftKey ? 5 : 1;
+        let handled = true;
+
+        if (ev.key === back) setSplit(splitNow() - step);
+        else if (ev.key === fwd) setSplit(splitNow() + step);
+        else if (ev.key === 'Home') setSplit(MIN);
+        else if (ev.key === 'End') setSplit(MAX);
+        else if (ev.key === 'Enter' || ev.key === ' ') setSplit(50);
+        else handled = false;
+
+        if (handled) ev.preventDefault();
+      });
+
+      /* ---------------- 绑定 ---------------- */
+
+      Object.keys(panes).forEach((key) => {
+        const p = panes[key];
+
+        p.form.addEventListener('submit', (ev) => {
+          ev.preventDefault();
+          if (load(p, p.input.value)) save();
+        });
+
+        p.root.addEventListener('click', async (ev) => {
+          const btn = ev.target.closest('[data-act]');
+          if (!btn) return;
+          const act = btn.dataset.act;
+
+          if (act === 'paste') {
+            try {
+              const text = await navigator.clipboard.readText();
+              if (!text) return toast('剪贴板是空的');
+              p.input.value = text.trim();
+              p.input.focus();
+              if (load(p, text)) { save(); toast('已粘贴并打开'); }
+            } catch (e) {
+              p.input.focus();
+              toast('浏览器不让直接读剪贴板，按 Ctrl + V 粘一下');
+            }
+          }
+
+          if (act === 'reload') {
+            if (p.video.hidden === false && p.video.src) {
+              p.video.load();
+              const r = p.video.play();
+              if (r && r.catch) r.catch(() => {});
+            } else if (p.loaded) {
+              /* 站内跳转过就用最新地址重开，否则回到原来的 iframe 地址 */
+              const src = p.embed ? p.current : (p.href || p.current);
+              p.frame.src = 'about:blank';
+              requestAnimationFrame(() => { p.frame.src = src; });
+            }
+          }
+
+          if (act === 'window') {
+            const url = p.href || p.input.value.trim();
+            if (!url) return toast('这一屏还没打开东西');
+            if (openWindowFor(url, p.side === 'right' ? 1 : 0)) {
+              toast('已开成独立窗口，占半屏');
+            } else {
+              toast('被浏览器拦了，地址栏右边允许弹窗再点一次');
+            }
+          }
+
+          if (act === 'clear') clearPane(p);
+        });
+      });
+
+      /* 抖音 / 知乎 / 小红书 这类站发了 X-Frame-Options，iframe 一定打不开；
+         退路是把两边开成两个并排的浏览器窗口，一样能同时播 */
+      function openWindowFor(url, half) {
+        const screenW = window.screen.availWidth || 1440;
+        const screenH = window.screen.availHeight || 900;
+        const width = Math.round(screenW / 2);
+        const height = Math.max(400, Math.round(screenH) - 60);
+        return window.open(url, '_blank',
+          'popup=yes,width=' + width + ',height=' + height + ',left=' + (half ? width : 0) + ',top=0');
+      }
+
+      function openAsWindows() {
+        const items = [panes.left, panes.right]
+          .map((p) => p.href || p.input.value.trim())
+          .filter(Boolean);
+
+        if (!items.length) return toast('两边都还没打开东西');
+
+        let blocked = 0;
+        items.forEach((url, index) => {
+          if (!openWindowFor(url, index)) blocked += 1;
+        });
+
+        if (blocked) toast('有窗口被浏览器拦了，地址栏右边允许弹窗后再点一次');
+        else if (items.length === 1) toast('开了一个窗口，另一边也贴个链接可以并排');
+        else toast('开成两个窗口了，各自全屏也能同时播');
+      }
+
+      /* 顶栏按钮 */
+      $('#windowsBtn').addEventListener('click', openAsWindows);
+
+      $('#popupBtn').addEventListener('click', () => {
+        blockPopups = !blockPopups;
+        const btn = $('#popupBtn');
+        btn.classList.toggle('on', blockPopups);
+        btn.setAttribute('aria-pressed', String(blockPopups));
+
+        Object.keys(panes).forEach((key) => {
+          const p = panes[key];
+          applySandbox(p.frame);
+          if (p.loaded && !p.frame.hidden && p.current) {
+            const src = p.current;
+            p.frame.src = 'about:blank';
+            requestAnimationFrame(() => { p.frame.src = src; });
+          }
+        });
+
+        save();
+        toast(blockPopups
+          ? '已禁止站内弹窗：点了没反应就按这一屏的 ⧉，改成独立窗口里点'
+          : '恢复允许弹窗，页面已重新加载');
+      });
+
+      $('#swapBtn').addEventListener('click', () => {
+        const leftUrl = panes.left.loaded ? panes.left.input.value : '';
+        const rightUrl = panes.right.loaded ? panes.right.input.value : '';
+        showEmpty(panes.left);
+        showEmpty(panes.right);
+        if (rightUrl) load(panes.left, rightUrl, { silent: true });
+        if (leftUrl) load(panes.right, leftUrl, { silent: true });
+        save();
+        toast('左右已经对调');
+      });
+
+      $('#resetBtn').addEventListener('click', () => { setSplit(50); toast('分界回到中间'); });
+
+      $('#orientBtn').addEventListener('click', () => {
+        stage.classList.toggle('vertical');
+        const vertical = stage.classList.contains('vertical');
+        divider.setAttribute('aria-orientation', vertical ? 'horizontal' : 'vertical');
+        save();
+        toast(vertical ? '改成上下分屏' : '改成左右分屏');
+      });
+
+      $('#themeBtn').addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        $('#themeColor').setAttribute('content', next === 'dark' ? '#111110' : '#f6f6f3');
+        try { localStorage.setItem('minimal-theme', next); } catch (e) {}
+      });
+
+      /* ---------------- 启动 ---------------- */
+
+      function boot() {
+        const state = readState();
+        const narrow = window.innerWidth <= 820;
+        const vertical = state && typeof state.vertical === 'boolean' ? state.vertical : narrow;
+
+        if (vertical) {
+          stage.classList.add('vertical');
+          divider.setAttribute('aria-orientation', 'horizontal');
+        }
+        setSplit(state && state.split ? state.split : 50, false);
+
+        blockPopups = !!(state && state.popups);
+        $('#popupBtn').classList.toggle('on', blockPopups);
+        $('#popupBtn').setAttribute('aria-pressed', String(blockPopups));
+        applySandbox(panes.left.frame);
+        applySandbox(panes.right.frame);
+
+        const params = new URLSearchParams(location.search);
+        const fromUrl = { left: params.get('l') || '', right: params.get('r') || '' };
+        const leftUrl = fromUrl.left || (state && state.left) || '';
+        const rightUrl = fromUrl.right || (state && state.right) || '';
+
+        if (leftUrl) load(panes.left, leftUrl, { silent: true });
+        if (rightUrl) load(panes.right, rightUrl, { silent: true });
+
+        if (!leftUrl) panes.left.input.focus();
+      }
+
+      boot();
+    })();
+  </script>
+</body>
+</html>
